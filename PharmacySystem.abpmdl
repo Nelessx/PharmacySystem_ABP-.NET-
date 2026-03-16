@@ -1,0 +1,109 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "5.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    },
+    "Volo.Abp.Account": {
+      "version": "10.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "10.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    },
+    "Volo.Abp.Identity": {
+      "version": "10.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "10.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "10.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "10.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "10.0.2",
+      "isInstalled": true,
+      "creationTime": "03/16/2026 08:36:14 +00:00"
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "PharmacySystem.Application": {
+      "path": "src/PharmacySystem.Application/PharmacySystem.Application.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.Application.Tests": {
+      "path": "test/PharmacySystem.Application.Tests/PharmacySystem.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "PharmacySystem.Domain.Shared": {
+      "path": "src/PharmacySystem.Domain.Shared/PharmacySystem.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.Application.Contracts": {
+      "path": "src/PharmacySystem.Application.Contracts/PharmacySystem.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.HttpApi": {
+      "path": "src/PharmacySystem.HttpApi/PharmacySystem.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.HttpApi.Client": {
+      "path": "src/PharmacySystem.HttpApi.Client/PharmacySystem.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.EntityFrameworkCore.Tests": {
+      "path": "test/PharmacySystem.EntityFrameworkCore.Tests/PharmacySystem.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "PharmacySystem.EntityFrameworkCore": {
+      "path": "src/PharmacySystem.EntityFrameworkCore/PharmacySystem.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.TestBase": {
+      "path": "test/PharmacySystem.TestBase/PharmacySystem.TestBase.abppkg",
+      "folder": "test"
+    },
+    "PharmacySystem.Domain.Tests": {
+      "path": "test/PharmacySystem.Domain.Tests/PharmacySystem.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "PharmacySystem.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/PharmacySystem.HttpApi.Client.ConsoleTestApp/PharmacySystem.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "PharmacySystem.DbMigrator": {
+      "path": "src/PharmacySystem.DbMigrator/PharmacySystem.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.HttpApi.Host": {
+      "path": "src/PharmacySystem.HttpApi.Host/PharmacySystem.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "PharmacySystem.Domain": {
+      "path": "src/PharmacySystem.Domain/PharmacySystem.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}

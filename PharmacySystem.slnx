@@ -1,0 +1,23 @@
+<Solution>
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+    <Folder Name="/src/">
+        <Project Path="src/PharmacySystem.Domain/PharmacySystem.Domain.csproj" />
+        <Project Path="src/PharmacySystem.Application/PharmacySystem.Application.csproj" />
+        <Project Path="src/PharmacySystem.EntityFrameworkCore/PharmacySystem.EntityFrameworkCore.csproj" />
+        <Project Path="src/PharmacySystem.Domain.Shared/PharmacySystem.Domain.Shared.csproj" />
+        <Project Path="src/PharmacySystem.Application.Contracts/PharmacySystem.Application.Contracts.csproj" />
+        <Project Path="src/PharmacySystem.HttpApi/PharmacySystem.HttpApi.csproj" />
+        <Project Path="src/PharmacySystem.HttpApi.Client/PharmacySystem.HttpApi.Client.csproj" />
+        <Project Path="src/PharmacySystem.DbMigrator/PharmacySystem.DbMigrator.csproj" />
+        <Project Path="src/PharmacySystem.HttpApi.Host/PharmacySystem.HttpApi.Host.csproj" />
+    </Folder>
+    <Folder Name="/test/">
+        <Project Path="test/PharmacySystem.Application.Tests/PharmacySystem.Application.Tests.csproj" />
+        <Project Path="test/PharmacySystem.EntityFrameworkCore.Tests/PharmacySystem.EntityFrameworkCore.Tests.csproj" />
+        <Project Path="test/PharmacySystem.TestBase/PharmacySystem.TestBase.csproj" />
+        <Project Path="test/PharmacySystem.Domain.Tests/PharmacySystem.Domain.Tests.csproj" />
+        <Project Path="test/PharmacySystem.HttpApi.Client.ConsoleTestApp/PharmacySystem.HttpApi.Client.ConsoleTestApp.csproj" />
+    </Folder>
+</Solution>
