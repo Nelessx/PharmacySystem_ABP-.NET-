@@ -23,4 +23,22 @@ export const APP_ROUTES: Routes = [
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
   },
+  {
+    path: 'categories',
+    loadComponent: () =>
+      import('./categories/category.component').then(c => c.CategoryComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'PharmacySystem.Categories',
+    },
+  },
+  {
+    path: 'medicines',
+    loadComponent: () =>
+      import('./medicines/medicine.component').then(c => c.MedicineComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'PharmacySystem.Medicines',
+    },
+  },
 ];

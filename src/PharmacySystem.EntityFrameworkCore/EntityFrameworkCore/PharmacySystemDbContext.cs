@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using PharmacySystem.Categories;
+using PharmacySystem.EntityFrameworkCore.Categories;
+using PharmacySystem.EntityFrameworkCore.Medicines;
+using PharmacySystem.Medicines;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -29,6 +32,7 @@ public class PharmacySystemDbContext :
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Medicine> Medicines { get; set; }
 
 
     #region Entities from the modules
@@ -81,8 +85,10 @@ public class PharmacySystemDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
-        
+
         /* Configure your own tables/entities inside here */
+        builder.ApplyConfiguration(new CategoryConfiguration());
+        builder.ApplyConfiguration(new MedicineConfiguration());
 
         //builder.Entity<YourEntity>(b =>
         //{

@@ -2,11 +2,22 @@
   "Culture": "en",
   "Texts": {
     "AppName": "PharmacySystem",
-    "Menu:Home": "Home",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
+
     "Welcome": "Welcome",
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
+
+    "Menu:Home": "Home",
+    "Menu:Categories": "Categories",
+    "Menu:Medicines": "Medicines",
+    "Menu:Suppliers": "Suppliers",
+    "Menu:Customers": "Customers",
+    "Menu:Purchases": "Purchases",
+    "Menu:Sales": "Sales",
+    "Menu:Stock": "Stock",
+    "Menu:Reports": "Reports",
 
     "Permission:PharmacySystem": "Pharmacy System",
+
     "Permission:Categories": "Categories",
     "Permission:Categories.Create": "Create",
     "Permission:Categories.Edit": "Edit",

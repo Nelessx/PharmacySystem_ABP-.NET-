@@ -1,0 +1,135 @@
+<div class="card">
+
+  <div class="card-header d-flex justify-content-between">
+
+    <h3>Categories</h3>
+
+    <button class="btn btn-primary" (click)="createCategory()">
+      New Category
+    </button>
+
+  </div>
+
+  <div class="card-body">
+
+    <table class="table table-striped">
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let item of category.items">
+
+          <td>{{ item.name }}</td>
+
+          <td>{{ item.description }}</td>
+
+          <td>{{ item.isActive ? 'Yes' : 'No' }}</td>
+
+          <td>
+
+            <button
+              class="btn btn-sm btn-warning me-2"
+              (click)="editCategory(item.id)"
+            >
+              Edit
+            </button>
+
+            <button
+              class="btn btn-sm btn-danger"
+              (click)="delete(item.id)"
+            >
+              Delete
+            </button>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+
+  <ng-template #abpHeader>
+
+    <h4>
+      {{ selectedCategory.id ? 'Edit Category' : 'New Category' }}
+    </h4>
+
+  </ng-template>
+
+  <ng-template #abpBody>
+
+    <form [formGroup]="form">
+
+      <div class="mb-3">
+
+        <label>Name</label>
+
+        <input
+          type="text"
+          class="form-control"
+          formControlName="name"
+        />
+
+      </div>
+
+      <div class="mb-3">
+
+        <label>Description</label>
+
+        <textarea
+          class="form-control"
+          formControlName="description"
+        ></textarea>
+
+      </div>
+
+      <div class="form-check">
+
+        <input
+          type="checkbox"
+          class="form-check-input"
+          formControlName="isActive"
+        />
+
+        <label class="form-check-label">
+          Active
+        </label>
+
+      </div>
+
+    </form>
+
+  </ng-template>
+
+  <ng-template #abpFooter>
+
+    <button class="btn btn-secondary" abpClose>
+      Cancel
+    </button>
+
+    <button
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="form?.invalid"
+    >
+      Save
+    </button>
+
+  </ng-template>
+
+</abp-modal>
