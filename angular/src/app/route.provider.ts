@@ -34,5 +34,21 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'PharmacySystem.Medicines',
     },
+    {
+      path: '/suppliers',
+      name: '::Menu:Suppliers',
+      iconClass: 'fas fa-truck',
+      order: 4,
+      layout: eLayoutType.application,
+      requiredPolicy: 'PharmacySystem.Suppliers',
+    },
+    {
+      path: '/customers',
+      name: '::Menu:Customers',
+      iconClass: 'fas fa-users',
+      order: 5,
+      layout: eLayoutType.application,
+      requiredPolicy: 'PharmacySystem.Customers',
+    }
   ]);
 }

@@ -2,7 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using PharmacySystem.Categories;
 using PharmacySystem.EntityFrameworkCore.Categories;
 using PharmacySystem.EntityFrameworkCore.Medicines;
+using PharmacySystem.EntityFrameworkCore.Suppliers;
 using PharmacySystem.Medicines;
+using PharmacySystem.Suppliers;
+using PharmacySystem.Customers;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -18,6 +21,7 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using PharmacySystem.EntityFrameworkCore.Customers;
 
 namespace PharmacySystem.EntityFrameworkCore;
 
@@ -33,6 +37,8 @@ public class PharmacySystemDbContext :
 
     public DbSet<Category> Categories { get; set; }
     public DbSet<Medicine> Medicines { get; set; }
+    public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 
 
     #region Entities from the modules
@@ -89,6 +95,8 @@ public class PharmacySystemDbContext :
         /* Configure your own tables/entities inside here */
         builder.ApplyConfiguration(new CategoryConfiguration());
         builder.ApplyConfiguration(new MedicineConfiguration());
+        builder.ApplyConfiguration(new SupplierConfiguration());
+        builder.ApplyConfiguration(new CustomerConfiguration());
 
         //builder.Entity<YourEntity>(b =>
         //{

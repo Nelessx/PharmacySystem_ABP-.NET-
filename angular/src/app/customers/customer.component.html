@@ -1,0 +1,111 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Customers</h3>
+
+    <button class="btn btn-primary" type="button" (click)="createCustomer()">
+      New Customer
+    </button>
+  </div>
+
+  <div class="card-body">
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Gender</th>
+          <th>Date of Birth</th>
+          <th>Patient Code</th>
+          <th>Active</th>
+          <th style="width: 180px">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let item of customers.items">
+          <td>{{ item.name }}</td>
+          <td>{{ item.phone }}</td>
+          <td>{{ item.gender }}</td>
+          <td>{{ item.dateOfBirth ? (item.dateOfBirth | date:'yyyy-MM-dd') : '' }}</td>
+          <td>{{ item.patientCode }}</td>
+          <td>{{ item.isActive ? 'Yes' : 'No' }}</td>
+          <td>
+            <button class="btn btn-sm btn-warning me-2" (click)="editCustomer(item.id)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(item.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+  <ng-template #abpHeader>
+    <h4>{{ selectedCustomer.id ? 'Edit Customer' : 'New Customer' }}</h4>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-control" formControlName="name" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phone</label>
+          <input type="text" class="form-control" formControlName="phone" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Gender</label>
+          <select class="form-select" formControlName="gender">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" class="form-control" formControlName="dateOfBirth" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Patient Code</label>
+          <input type="text" class="form-control" formControlName="patientCode" />
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <label class="form-label">Address</label>
+          <textarea class="form-control" formControlName="address" rows="3"></textarea>
+        </div>
+
+        <div class="col-md-12">
+          <div class="form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              formControlName="isActive"
+              id="customerIsActive"
+            />
+            <label class="form-check-label" for="customerIsActive">
+              Active
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button class="btn btn-secondary" abpClose>
+      Cancel
+    </button>
+
+    <button class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
+      Save
+    </button>
+  </ng-template>
+</abp-modal>
