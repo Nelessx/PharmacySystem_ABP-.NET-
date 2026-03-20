@@ -49,6 +49,14 @@ function configureRoutes() {
       order: 5,
       layout: eLayoutType.application,
       requiredPolicy: 'PharmacySystem.Customers',
+    },
+    {
+      path: '/purchases',
+      name: '::Menu:Purchases',
+      iconClass: 'fas fa-shopping-cart',
+      order: 6,
+      layout: eLayoutType.application,
+      requiredPolicy: 'PharmacySystem.Purchases',
     }
   ]);
 }

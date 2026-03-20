@@ -3,9 +3,11 @@ using PharmacySystem.Categories;
 using PharmacySystem.EntityFrameworkCore.Categories;
 using PharmacySystem.EntityFrameworkCore.Medicines;
 using PharmacySystem.EntityFrameworkCore.Suppliers;
+using PharmacySystem.EntityFrameworkCore.Purchases;
 using PharmacySystem.Medicines;
 using PharmacySystem.Suppliers;
 using PharmacySystem.Customers;
+using PharmacySystem.Purchases;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -39,6 +41,8 @@ public class PharmacySystemDbContext :
     public DbSet<Medicine> Medicines { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<Customer> Customers { get; set; }
+
+    public DbSet<Purchase> Purchases { get; set; }
 
 
     #region Entities from the modules
@@ -97,6 +101,7 @@ public class PharmacySystemDbContext :
         builder.ApplyConfiguration(new MedicineConfiguration());
         builder.ApplyConfiguration(new SupplierConfiguration());
         builder.ApplyConfiguration(new CustomerConfiguration());
+        builder.ApplyConfiguration(new PurchaseConfiguration());
 
         //builder.Entity<YourEntity>(b =>
         //{
