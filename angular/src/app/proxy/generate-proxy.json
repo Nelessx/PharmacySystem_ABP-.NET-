@@ -2041,6 +2041,43 @@
             }
           ],
           "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/purchase",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "PharmacySystem.Purchases.CreateUpdatePurchaseDto, PharmacySystem.Application.Contracts",
+                  "type": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
+                  "typeSimple": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
+                  "typeSimple": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "PharmacySystem.Purchases.PurchaseDto",
+                "typeSimple": "PharmacySystem.Purchases.PurchaseDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<PharmacySystem.Purchases.PurchaseDto,PharmacySystem.Purchases.CreateUpdatePurchaseDto>"
+            },
             "GetSupplierLookupAsync": {
               "uniqueName": "GetSupplierLookupAsync",
               "name": "GetSupplierLookupAsync",
@@ -2168,43 +2205,6 @@
               },
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<PharmacySystem.Purchases.PurchaseDto,PharmacySystem.Purchases.PurchaseDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
-            },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/purchase",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "PharmacySystem.Purchases.CreateUpdatePurchaseDto, PharmacySystem.Application.Contracts",
-                  "type": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
-                  "typeSimple": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
-                  "typeSimple": "PharmacySystem.Purchases.CreateUpdatePurchaseDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "PharmacySystem.Purchases.PurchaseDto",
-                "typeSimple": "PharmacySystem.Purchases.PurchaseDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<PharmacySystem.Purchases.PurchaseDto,PharmacySystem.Purchases.CreateUpdatePurchaseDto>"
             },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
@@ -2427,6 +2427,43 @@
             }
           ],
           "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/sale",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "PharmacySystem.Sales.CreateUpdateSaleDto, PharmacySystem.Application.Contracts",
+                  "type": "PharmacySystem.Sales.CreateUpdateSaleDto",
+                  "typeSimple": "PharmacySystem.Sales.CreateUpdateSaleDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "PharmacySystem.Sales.CreateUpdateSaleDto",
+                  "typeSimple": "PharmacySystem.Sales.CreateUpdateSaleDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "PharmacySystem.Sales.SaleDto",
+                "typeSimple": "PharmacySystem.Sales.SaleDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<PharmacySystem.Sales.SaleDto,PharmacySystem.Sales.CreateUpdateSaleDto>"
+            },
             "GetCustomerLookupAsync": {
               "uniqueName": "GetCustomerLookupAsync",
               "name": "GetCustomerLookupAsync",
@@ -2555,43 +2592,6 @@
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<PharmacySystem.Sales.SaleDto,PharmacySystem.Sales.SaleDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
             },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/sale",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "PharmacySystem.Sales.CreateUpdateSaleDto, PharmacySystem.Application.Contracts",
-                  "type": "PharmacySystem.Sales.CreateUpdateSaleDto",
-                  "typeSimple": "PharmacySystem.Sales.CreateUpdateSaleDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "PharmacySystem.Sales.CreateUpdateSaleDto",
-                  "typeSimple": "PharmacySystem.Sales.CreateUpdateSaleDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "PharmacySystem.Sales.SaleDto",
-                "typeSimple": "PharmacySystem.Sales.SaleDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<PharmacySystem.Sales.SaleDto,PharmacySystem.Sales.CreateUpdateSaleDto>"
-            },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
               "name": "UpdateAsync",
@@ -2685,6 +2685,156 @@
               },
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
+            }
+          }
+        },
+        "PharmacySystem.Stocks.StockAppService": {
+          "controllerName": "Stock",
+          "controllerGroupName": "Stock",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "PharmacySystem.Stocks.StockAppService",
+          "interfaces": [
+            {
+              "type": "PharmacySystem.Stocks.IStockAppService",
+              "name": "IStockAppService",
+              "methods": [
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "PharmacySystem.Stocks.StockDto",
+                    "typeSimple": "PharmacySystem.Stocks.StockDto"
+                  }
+                },
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                      "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<PharmacySystem.Stocks.StockDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<PharmacySystem.Stocks.StockDto>"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/app/stock/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "PharmacySystem.Stocks.StockDto",
+                "typeSimple": "PharmacySystem.Stocks.StockDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<PharmacySystem.Stocks.StockDto,PharmacySystem.Stocks.StockDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
+            },
+            "GetListAsyncByInput": {
+              "uniqueName": "GetListAsyncByInput",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/stock",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<PharmacySystem.Stocks.StockDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<PharmacySystem.Stocks.StockDto>"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<PharmacySystem.Stocks.StockDto,PharmacySystem.Stocks.StockDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
             }
           }
         },
@@ -7280,6 +7430,93 @@
         },
         {
           "name": "LineTotal",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
+    "PharmacySystem.Stocks.StockDto": {
+      "baseType": "Volo.Abp.Application.Dtos.FullAuditedEntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "MedicineId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "MedicineName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "BatchNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "ExpiryDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "Quantity",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "UnitCost",
           "jsonName": null,
           "type": "System.Decimal",
           "typeSimple": "number",

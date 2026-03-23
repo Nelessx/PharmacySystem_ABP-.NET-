@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PharmacySystem.Medicines;
 using PharmacySystem.Permissions;
+using PharmacySystem.Stocks;
 using PharmacySystem.Suppliers;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -26,14 +27,19 @@ public class PurchaseAppService :
     // Repository for Medicine lookup and medicine name loading
     private readonly IRepository<Medicine, Guid> _medicineRepository;
 
+    // Domain service responsible for stock updates
+    private readonly StockManager _stockManager;
+
     public PurchaseAppService(
         IRepository<Purchase, Guid> repository,
         IRepository<Supplier, Guid> supplierRepository,
-        IRepository<Medicine, Guid> medicineRepository)
+        IRepository<Medicine, Guid> medicineRepository,
+        StockManager stockManager)
         : base(repository)
     {
         _supplierRepository = supplierRepository;
         _medicineRepository = medicineRepository;
+        _stockManager = stockManager;
 
         // Permission rules for Purchase module
         GetPolicyName = PharmacySystemPermissions.Purchases.Default;
@@ -98,6 +104,27 @@ public class PurchaseAppService :
         }
 
         await Task.CompletedTask;
+    }
+
+    // Create purchase and then increase stock for each purchase item
+    public override async Task<PurchaseDto> CreateAsync(CreateUpdatePurchaseDto input)
+    {
+        // Let ABP create and save the Purchase first
+        var result = await base.CreateAsync(input);
+
+        // After successful save, increase stock for each purchased item
+        foreach (var item in input.Items)
+        {
+            await _stockManager.IncreaseAsync(
+                item.MedicineId,
+                item.BatchNumber ?? throw new ArgumentException("Batch number is required for stock."),
+                item.ExpiryDate,
+                item.Quantity,
+                item.UnitPrice
+            );
+        }
+
+        return result;
     }
 
     // Returns suppliers for Purchase dropdown

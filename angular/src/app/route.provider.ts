@@ -66,5 +66,13 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'PharmacySystem.Sales',
     },
+    {
+      path: '/stocks',
+      name: '::Menu:Stock',
+      iconClass: 'fas fa-boxes',
+      order: 8,
+      layout: eLayoutType.application,
+      requiredPolicy: 'PharmacySystem.Stock',
+    },
   ]);
 }

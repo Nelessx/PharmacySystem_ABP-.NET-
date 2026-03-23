@@ -3,6 +3,7 @@ using PharmacySystem.Customers;
 using PharmacySystem.Medicines;
 using PharmacySystem.Purchases;
 using PharmacySystem.Sales;
+using PharmacySystem.Stocks;
 using PharmacySystem.Suppliers;
 using Riok.Mapperly.Abstractions;
 using Volo.Abp.Mapperly;
@@ -92,4 +93,17 @@ public partial class SaleToSaleDtoMapper : MapperBase<Sale, SaleDto>
     // CustomerName does not exist in entity, so we fill it manually later
     [MapperIgnoreTarget(nameof(SaleDto.CustomerName))]
     public override partial void Map(Sale source, SaleDto destination);
+}
+
+// Maps Stock entity to StockDto
+[Mapper]
+public partial class StockToStockDtoMapper : MapperBase<Stock, StockDto>
+{
+    // MedicineName does not exist in entity, so fill it manually later
+    [MapperIgnoreTarget(nameof(StockDto.MedicineName))]
+    public override partial StockDto Map(Stock source);
+
+    // MedicineName does not exist in entity, so fill it manually later
+    [MapperIgnoreTarget(nameof(StockDto.MedicineName))]
+    public override partial void Map(Stock source, StockDto destination);
 }

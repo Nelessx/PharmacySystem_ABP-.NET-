@@ -77,4 +77,13 @@ export const APP_ROUTES: Routes = [
       requiredPolicy: 'PharmacySystem.Sales',
     },
   },
+  {
+    path: 'stocks',
+    loadComponent: () =>
+      import('./stocks/stock.component').then(c => c.StockComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'PharmacySystem.Stock',
+    },
+  },
 ];

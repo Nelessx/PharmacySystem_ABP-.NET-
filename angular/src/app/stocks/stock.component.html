@@ -1,0 +1,58 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="mb-0">Stock</h3>
+  </div>
+
+  <div class="card-body">
+    <table class="table table-striped table-bordered align-middle">
+      <thead>
+        <tr>
+          <th>Medicine</th>
+          <th>Batch Number</th>
+          <th>Expiry Date</th>
+          <th>Quantity</th>
+          <th>Unit Cost</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let item of stocks.items">
+          <td>{{ item.medicineName }}</td>
+          <td>{{ item.batchNumber }}</td>
+          <td>
+            {{ item.expiryDate ? (item.expiryDate | date:'yyyy-MM-dd') : '' }}
+          </td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.unitCost }}</td>
+          <td>
+            <span
+              *ngIf="isExpired(item.expiryDate)"
+              class="badge bg-danger"
+            >
+              Expired
+            </span>
+
+            <span
+              *ngIf="!isExpired(item.expiryDate) && isExpiringSoon(item.expiryDate)"
+              class="badge bg-warning text-dark"
+            >
+              Expiring Soon
+            </span>
+
+            <span
+              *ngIf="!isExpired(item.expiryDate) && !isExpiringSoon(item.expiryDate)"
+              class="badge bg-success"
+            >
+              Good
+            </span>
+          </td>
+        </tr>
+
+        <tr *ngIf="stocks.items.length === 0">
+          <td colspan="6" class="text-center">No stock records found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

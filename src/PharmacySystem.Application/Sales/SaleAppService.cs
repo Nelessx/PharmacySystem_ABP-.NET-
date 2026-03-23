@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using PharmacySystem.Customers;
 using PharmacySystem.Medicines;
 using PharmacySystem.Permissions;
+using PharmacySystem.Stocks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -26,14 +27,19 @@ public class SaleAppService :
     // Repository for Medicine lookup and display name loading
     private readonly IRepository<Medicine, Guid> _medicineRepository;
 
+    // Domain service responsible for stock updates
+    private readonly StockManager _stockManager;
+
     public SaleAppService(
         IRepository<Sale, Guid> repository,
         IRepository<Customer, Guid> customerRepository,
-        IRepository<Medicine, Guid> medicineRepository)
+        IRepository<Medicine, Guid> medicineRepository,
+        StockManager stockManager)
         : base(repository)
     {
         _customerRepository = customerRepository;
         _medicineRepository = medicineRepository;
+        _stockManager = stockManager;
 
         // Permission rules for Sales module
         GetPolicyName = PharmacySystemPermissions.Sales.Default;
@@ -43,7 +49,7 @@ public class SaleAppService :
         DeletePolicyName = PharmacySystemPermissions.Sales.Delete;
     }
 
-    // ================= CREATE =================
+    // Maps create/update DTO into a new Sale entity
     protected override async Task<Sale> MapToEntityAsync(CreateUpdateSaleDto input)
     {
         // Create Sale header
@@ -56,7 +62,7 @@ public class SaleAppService :
             input.DiscountAmount
         );
 
-        // Add each item
+        // Add each item into the Sale aggregate
         foreach (var item in input.Items)
         {
             sale.AddItem(
@@ -70,17 +76,17 @@ public class SaleAppService :
         return await Task.FromResult(sale);
     }
 
-    // ================= UPDATE =================
+    // Maps create/update DTO into an existing Sale entity
     protected override async Task MapToEntityAsync(CreateUpdateSaleDto input, Sale entity)
     {
-        // Update header
+        // Update Sale header
         entity.SetSaleNumber(input.SaleNumber);
         entity.SetSaleDate(input.SaleDate);
         entity.SetCustomer(input.CustomerId);
         entity.SetNotes(input.Notes);
         entity.SetDiscountAmount(input.DiscountAmount);
 
-        // Rebuild items
+        // Clear old items and rebuild from input
         entity.ClearItems();
 
         foreach (var item in input.Items)
@@ -96,7 +102,27 @@ public class SaleAppService :
         await Task.CompletedTask;
     }
 
-    // ================= LOOKUPS =================
+    // Create sale and then decrease stock for each sold item
+    public override async Task<SaleDto> CreateAsync(CreateUpdateSaleDto input)
+    {
+        // First decrease stock. If stock is insufficient, creation should fail.
+        foreach (var item in input.Items)
+        {
+            await _stockManager.DecreaseAsync(
+                item.MedicineId,
+                item.BatchNumber ?? throw new ArgumentException("Batch number is required for stock deduction."),
+                null,
+                item.Quantity
+            );
+        }
+
+        // If stock deduction succeeded for all items, create and save the Sale
+        var result = await base.CreateAsync(input);
+
+        return result;
+    }
+
+    // Returns customers for Sale dropdown
     public async Task<ListResultDto<CustomerLookupDto>> GetCustomerLookupAsync()
     {
         var customers = await _customerRepository.GetListAsync();
@@ -114,6 +140,7 @@ public class SaleAppService :
         return new ListResultDto<CustomerLookupDto>(items);
     }
 
+    // Returns medicines for Sale item dropdown
     public async Task<ListResultDto<MedicineLookupDto>> GetMedicineLookupAsync()
     {
         var medicines = await _medicineRepository.GetListAsync();
@@ -131,7 +158,7 @@ public class SaleAppService :
         return new ListResultDto<MedicineLookupDto>(items);
     }
 
-    // ================= GET SINGLE =================
+    // Returns one sale with customer name and medicine names filled manually
     public override async Task<SaleDto> GetAsync(Guid id)
     {
         await CheckGetPolicyAsync();
@@ -157,7 +184,7 @@ public class SaleAppService :
         return dto;
     }
 
-    // ================= GET LIST =================
+    // Returns sale list with customer name filled manually
     public override async Task<PagedResultDto<SaleDto>> GetListAsync(PagedAndSortedResultRequestDto input)
     {
         await CheckGetListPolicyAsync();
@@ -169,7 +196,9 @@ public class SaleAppService :
         var totalCount = await AsyncExecuter.CountAsync(query);
 
         var sales = await AsyncExecuter.ToListAsync(
-            query.Skip(input.SkipCount).Take(input.MaxResultCount)
+            query
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount)
         );
 
         var customers = await _customerRepository.GetListAsync();
