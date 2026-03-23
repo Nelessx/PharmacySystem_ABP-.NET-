@@ -28,7 +28,7 @@ public class PharmacySystemDbContextFactory : IDesignTimeDbContextFactory<Pharma
     private static IConfigurationRoot BuildConfiguration()
     {
         var builder = new ConfigurationBuilder()
-            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../PharmacySystem.DbMigrator/"))
+            .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false)
             .AddEnvironmentVariables();
 

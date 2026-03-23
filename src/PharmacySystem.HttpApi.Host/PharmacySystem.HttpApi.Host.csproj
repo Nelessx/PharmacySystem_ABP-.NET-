@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <Import Project="..\..\common.props" />
 
@@ -7,13 +7,14 @@
     <Nullable>enable</Nullable>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <RootNamespace>PharmacySystem</RootNamespace>
-    <PreserveCompilationReferences>true</PreserveCompilationReferences>
+		<PreserveCompilationReferences>true</PreserveCompilationReferences>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'PharmacySystem.HttpApi.Host' " />
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
+		<PackageReference Include="Scriban" Version="6.6.0" />
+		<PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
     <PackageReference Include="KubernetesClient" Version="18.0.5"/>
     <PackageReference Include="IdentityModel" Version="7.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />

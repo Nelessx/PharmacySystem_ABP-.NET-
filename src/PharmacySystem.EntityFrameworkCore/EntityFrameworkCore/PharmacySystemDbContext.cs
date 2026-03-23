@@ -1,13 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using PharmacySystem.Categories;
-using PharmacySystem.EntityFrameworkCore.Categories;
-using PharmacySystem.EntityFrameworkCore.Medicines;
-using PharmacySystem.EntityFrameworkCore.Suppliers;
-using PharmacySystem.EntityFrameworkCore.Purchases;
-using PharmacySystem.Medicines;
-using PharmacySystem.Suppliers;
 using PharmacySystem.Customers;
+using PharmacySystem.Medicines;
 using PharmacySystem.Purchases;
+using PharmacySystem.Suppliers;
+using PharmacySystem.Sales;
+using PharmacySystem.EntityFrameworkCore.Categories;
+using PharmacySystem.EntityFrameworkCore.Customers;
+using PharmacySystem.EntityFrameworkCore.Medicines;
+using PharmacySystem.EntityFrameworkCore.Purchases;
+using PharmacySystem.EntityFrameworkCore.Suppliers;
+using PharmacySystem.EntityFrameworkCore.Sales;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -23,7 +26,6 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using PharmacySystem.EntityFrameworkCore.Customers;
 
 namespace PharmacySystem.EntityFrameworkCore;
 
@@ -41,8 +43,8 @@ public class PharmacySystemDbContext :
     public DbSet<Medicine> Medicines { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<Customer> Customers { get; set; }
-
     public DbSet<Purchase> Purchases { get; set; }
+    public DbSet<Sale> Sales { get; set; }
 
 
     #region Entities from the modules
@@ -102,6 +104,7 @@ public class PharmacySystemDbContext :
         builder.ApplyConfiguration(new SupplierConfiguration());
         builder.ApplyConfiguration(new CustomerConfiguration());
         builder.ApplyConfiguration(new PurchaseConfiguration());
+        builder.ApplyConfiguration(new SaleConfiguration());
 
         //builder.Entity<YourEntity>(b =>
         //{

@@ -6,7 +6,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>PharmacySystem</RootNamespace>
-  </PropertyGroup>
+		<NoWarn>$(NoWarn);NU1902</NoWarn>
+	</PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PharmacySystem.Domain.Shared\PharmacySystem.Domain.Shared.csproj" />
@@ -28,6 +29,7 @@
     <PackageReference Include="Volo.Abp.OpenIddict.Domain" Version="10.0.2" />
     <PackageReference Include="Volo.Abp.Identity.Domain" Version="10.0.2" />
     <PackageReference Include="Volo.Abp.TenantManagement.Domain" Version="10.0.2" />
+    <PackageReference Include="Scriban" Version="6.6.0" />
   </ItemGroup>
 
 </Project>

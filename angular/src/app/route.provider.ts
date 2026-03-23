@@ -57,6 +57,14 @@ function configureRoutes() {
       order: 6,
       layout: eLayoutType.application,
       requiredPolicy: 'PharmacySystem.Purchases',
-    }
+    },
+    {
+      path: '/sales',
+      name: '::Menu:Sales',
+      iconClass: 'fas fa-dollar-sign',
+      order: 7,
+      layout: eLayoutType.application,
+      requiredPolicy: 'PharmacySystem.Sales',
+    },
   ]);
 }

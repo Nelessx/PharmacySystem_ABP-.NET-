@@ -2,6 +2,7 @@ using PharmacySystem.Categories;
 using PharmacySystem.Customers;
 using PharmacySystem.Medicines;
 using PharmacySystem.Purchases;
+using PharmacySystem.Sales;
 using PharmacySystem.Suppliers;
 using Riok.Mapperly.Abstractions;
 using Volo.Abp.Mapperly;
@@ -66,4 +67,29 @@ public partial class PurchaseToPurchaseDtoMapper : MapperBase<Purchase, Purchase
     // Maps one Purchase into an existing PurchaseDto
     [MapperIgnoreTarget(nameof(PurchaseDto.SupplierName))] // SupplierName is not in entity
     public override partial void Map(Purchase source, PurchaseDto destination);
+}
+// Maps SaleItem entity to SaleItemDto
+[Mapper]
+public partial class SaleItemToSaleItemDtoMapper : MapperBase<SaleItem, SaleItemDto>
+{
+    // MedicineName does not exist in entity, so we fill it manually later
+    [MapperIgnoreTarget(nameof(SaleItemDto.MedicineName))]
+    public override partial SaleItemDto Map(SaleItem source);
+
+    // MedicineName does not exist in entity, so we fill it manually later
+    [MapperIgnoreTarget(nameof(SaleItemDto.MedicineName))]
+    public override partial void Map(SaleItem source, SaleItemDto destination);
+}
+
+// Maps Sale entity to SaleDto
+[Mapper]
+public partial class SaleToSaleDtoMapper : MapperBase<Sale, SaleDto>
+{
+    // CustomerName does not exist in entity, so we fill it manually later
+    [MapperIgnoreTarget(nameof(SaleDto.CustomerName))]
+    public override partial SaleDto Map(Sale source);
+
+    // CustomerName does not exist in entity, so we fill it manually later
+    [MapperIgnoreTarget(nameof(SaleDto.CustomerName))]
+    public override partial void Map(Sale source, SaleDto destination);
 }

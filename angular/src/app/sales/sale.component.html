@@ -1,0 +1,181 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Sales</h3>
+
+    <button class="btn btn-primary" type="button" (click)="createSale()">
+      New Sale
+    </button>
+  </div>
+
+  <div class="card-body">
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th>Sale Number</th>
+          <th>Customer</th>
+          <th>Sale Date</th>
+          <th>Total Amount</th>
+          <th>Discount</th>
+          <th>Net Amount</th>
+          <th style="width: 180px">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let item of sales.items">
+          <td>{{ item.saleNumber }}</td>
+          <td>{{ item.customerName || 'Walk-in Customer' }}</td>
+          <td>{{ item.saleDate | date:'yyyy-MM-dd' }}</td>
+          <td>{{ item.totalAmount }}</td>
+          <td>{{ item.discountAmount }}</td>
+          <td>{{ item.netAmount }}</td>
+          <td>
+            <button class="btn btn-sm btn-warning me-2" (click)="editSale(item.id)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(item.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen" [options]="{ size: 'xl' }">
+  <ng-template #abpHeader>
+    <h4>{{ selectedSale.id ? 'Edit Sale' : 'New Sale' }}</h4>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <form [formGroup]="form">
+      <!-- Sale header -->
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Sale Number</label>
+          <input type="text" class="form-control" formControlName="saleNumber" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Customer</label>
+          <select class="form-select" formControlName="customerId">
+            <option [ngValue]="null">Walk-in Customer</option>
+            <option *ngFor="let customer of customers" [value]="customer.id">
+              {{ customer.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Sale Date</label>
+          <input type="date" class="form-control" formControlName="saleDate" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Discount Amount</label>
+          <input type="number" class="form-control" formControlName="discountAmount" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Sale items -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Items</h5>
+
+        <button class="btn btn-sm btn-primary" type="button" (click)="addItemRow()">
+          Add Item
+        </button>
+      </div>
+
+      <div formArrayName="items">
+        <div
+          class="border rounded p-3 mb-3"
+          *ngFor="let itemGroup of items.controls; let i = index"
+          [formGroupName]="i"
+        >
+          <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+              <label class="form-label">Medicine</label>
+              <select class="form-select" formControlName="medicineId">
+                <option [ngValue]="null">Select Medicine</option>
+                <option *ngFor="let medicine of medicines" [value]="medicine.id">
+                  {{ medicine.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6 mb-3">
+              <label class="form-label">Batch Number</label>
+              <input type="text" class="form-control" formControlName="batchNumber" />
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+              <label class="form-label">Qty</label>
+              <input type="number" class="form-control" formControlName="quantity" />
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+              <label class="form-label">Unit Price</label>
+              <input type="number" class="form-control" formControlName="unitPrice" />
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+              <label class="form-label text-nowrap">Line Total</label>
+              <input
+                type="text"
+                class="form-control"
+                [value]="itemGroup.get('lineTotal')?.value"
+                readonly
+              />
+            </div>
+
+            <div class="col-lg-1 col-md-4 col-sm-6 mb-3 d-flex align-items-end">
+              <button
+                class="btn btn-sm btn-danger w-100"
+                type="button"
+                (click)="removeItemRow(i)"
+              >
+                X
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Totals -->
+      <div class="row">
+        <div class="col-md-4 offset-md-8">
+          <table class="table table-bordered mb-0">
+            <tr>
+              <th>Total Amount</th>
+              <td>{{ uiTotalAmount }}</td>
+            </tr>
+            <tr>
+              <th>Discount</th>
+              <td>{{ form.get('discountAmount')?.value || 0 }}</td>
+            </tr>
+            <tr>
+              <th>Net Amount</th>
+              <td>{{ uiNetAmount }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button class="btn btn-secondary" abpClose>
+      Cancel
+    </button>
+
+    <button class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
+      Save
+    </button>
+  </ng-template>
+</abp-modal>
