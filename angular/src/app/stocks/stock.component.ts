@@ -3,7 +3,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 
-import { StockDto, StockService } from '../proxy/stocks';
+import {
+  ExpiringStockDto,
+  LowStockDto,
+  StockDto,
+  StockService,
+} from '../proxy/stocks';
 
 @Component({
   selector: 'app-stock',
@@ -13,14 +18,20 @@ import { StockDto, StockService } from '../proxy/stocks';
   providers: [ListService],
 })
 export class StockComponent implements OnInit {
-  // Holds paged stock list returned by backend
+  // Main stock list
   stocks = { items: [], totalCount: 0 } as PagedResultDto<StockDto>;
+
+  // Low stock list
+  lowStockItems: LowStockDto[] = [];
+
+  // Expiring/expired stock list
+  expiringStockItems: ExpiringStockDto[] = [];
 
   public readonly list = inject(ListService);
   private readonly stockService = inject(StockService);
 
   ngOnInit(): void {
-    // Load stock list with larger page size for now
+    // Load normal stock list
     const stockStreamCreator = query =>
       this.stockService.getList({
         ...query,
@@ -29,6 +40,26 @@ export class StockComponent implements OnInit {
 
     this.list.hookToQuery(stockStreamCreator).subscribe(response => {
       this.stocks = response;
+    });
+
+    // Load low stock items
+    this.loadLowStock();
+
+    // Load expiring stock items
+    this.loadExpiringStock();
+  }
+
+  // Loads stock rows where quantity is below or equal to reorder level
+  loadLowStock(): void {
+    this.stockService.getLowStock().subscribe(response => {
+      this.lowStockItems = response.items;
+    });
+  }
+
+  // Loads stock rows that are expired or expiring soon
+  loadExpiringStock(): void {
+    this.stockService.getExpiringStock(30).subscribe(response => {
+      this.expiringStockItems = response.items;
     });
   }
 
@@ -45,7 +76,7 @@ export class StockComponent implements OnInit {
     return expiry < today;
   }
 
-  // Returns true if item is expiring within the next 30 days
+  // Returns true if item is expiring within next 30 days
   isExpiringSoon(expiryDate?: string): boolean {
     if (!expiryDate) return false;
 
