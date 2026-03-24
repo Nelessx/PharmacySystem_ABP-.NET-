@@ -86,4 +86,9 @@ export const APP_ROUTES: Routes = [
       requiredPolicy: 'PharmacySystem.Stock',
     },
   },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./dashboard/dashboard.component').then(c => c.DashboardComponent),
+  },
 ];

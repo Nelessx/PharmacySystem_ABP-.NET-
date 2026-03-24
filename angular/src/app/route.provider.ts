@@ -74,5 +74,12 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'PharmacySystem.Stock',
     },
+    {
+      path: '/dashboard',
+      name: '::Menu:Dashboard',
+      iconClass: 'fas fa-chart-line',
+      order: 1,
+      layout: eLayoutType.application,
+    },
   ]);
 }

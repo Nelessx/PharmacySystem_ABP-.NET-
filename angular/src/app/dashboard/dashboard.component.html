@@ -1,0 +1,73 @@
+<div class="row g-4">
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Medicines</h6>
+        <h2>{{ stats.totalMedicines || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Suppliers</h6>
+        <h2>{{ stats.totalSuppliers || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Customers</h6>
+        <h2>{{ stats.totalCustomers || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Stock Rows</h6>
+        <h2>{{ stats.totalStockRows || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-warning">
+      <div class="card-body">
+        <h6 class="text-muted">Low Stock</h6>
+        <h2>{{ stats.lowStockCount || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-danger">
+      <div class="card-body">
+        <h6 class="text-muted">Expiring Stock</h6>
+        <h2>{{ stats.expiringStockCount || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Purchases</h6>
+        <h2>{{ stats.totalPurchases || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Sales</h6>
+        <h2>{{ stats.totalSales || 0 }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
