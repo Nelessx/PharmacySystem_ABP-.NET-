@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Volo.Abp.Domain.Entities;
 
 namespace PharmacySystem.Purchases;
 
 // Input DTO for creating/updating purchase
-public class CreateUpdatePurchaseDto
+public class CreateUpdatePurchaseDto : IHasConcurrencyStamp
 {
     // Purchase number required
     [Required]
@@ -30,6 +31,9 @@ public class CreateUpdatePurchaseDto
     // Discount amount
     [Range(0, double.MaxValue)]
     public decimal DiscountAmount { get; set; }
+
+    // Concurrency stamp for ABP optimistic concurrency
+    public string? ConcurrencyStamp { get; set; }
 
     // List of items (VERY IMPORTANT)
     [Required]

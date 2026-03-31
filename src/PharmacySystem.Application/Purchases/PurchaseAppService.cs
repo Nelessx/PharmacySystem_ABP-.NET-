@@ -1,13 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using PharmacySystem.Medicines;
+﻿using PharmacySystem.Medicines;
 using PharmacySystem.Permissions;
 using PharmacySystem.Stocks;
 using PharmacySystem.Suppliers;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Data;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.ObjectMapping;
 
 namespace PharmacySystem.Purchases;
 
@@ -89,7 +92,7 @@ public class PurchaseAppService :
         entity.SetNotes(input.Notes);
         entity.SetDiscountAmount(input.DiscountAmount);
 
-        // Clear old items and rebuild from input
+        // Update items collection
         entity.ClearItems();
 
         foreach (var item in input.Items)
@@ -228,5 +231,72 @@ public class PurchaseAppService :
         }).ToList();
 
         return new PagedResultDto<PurchaseDto>(totalCount, items);
+    }
+
+    public override async Task<PurchaseDto> UpdateAsync(Guid id, CreateUpdatePurchaseDto input)
+    {
+        // Load existing purchase WITH items
+        var purchase = await Repository.GetAsync(id);
+
+        // 🔴 STEP 1: REVERSE OLD STOCK (before any modifications)
+        var oldItems = purchase.Items.ToList();
+        foreach (var item in oldItems)
+        {
+            await _stockManager.DecreaseAsync(
+                item.MedicineId,
+                item.BatchNumber!,
+                item.ExpiryDate,
+                item.Quantity
+            );
+        }
+
+        // 🔵 STEP 2: UPDATE ENTITY
+        // Set the concurrency stamp from input - this is critical for optimistic concurrency
+        purchase.SetConcurrencyStampIfNotNull(input.ConcurrencyStamp);
+        await MapToEntityAsync(input, purchase);
+
+        // 🔐 Try to update with optimistic concurrency check
+        // If the stamp doesn't match, EF Core will throw DbUpdateConcurrencyException
+        try
+        {
+            await Repository.UpdateAsync(purchase, autoSave: true);
+        }
+        catch (AbpDbConcurrencyException)
+        {
+            // Concurrency conflict detected - re-throw so client can handle it
+            throw;
+        }
+
+        // 🟢 STEP 3: APPLY NEW STOCK (only after successful update)
+        foreach (var item in input.Items)
+        {
+            await _stockManager.IncreaseAsync(
+                item.MedicineId,
+                item.BatchNumber!,
+                item.ExpiryDate,
+                item.Quantity,
+                item.UnitPrice
+            );
+        }
+
+        return ObjectMapper.Map<Purchase, PurchaseDto>(purchase);
+    }
+
+    public override async Task DeleteAsync(Guid id)
+    {
+        var purchase = await Repository.GetAsync(id);
+
+        // 🔴 Reverse stock
+        foreach (var item in purchase.Items)
+        {
+            await _stockManager.DecreaseAsync(
+                item.MedicineId,
+                item.BatchNumber!,
+                item.ExpiryDate,
+                item.Quantity
+            );
+        }
+
+        await Repository.DeleteAsync(id);
     }
 }

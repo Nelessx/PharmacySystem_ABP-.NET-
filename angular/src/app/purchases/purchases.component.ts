@@ -111,6 +111,7 @@ export class PurchaseComponent implements OnInit {
         this.selectedPurchase.discountAmount ?? 0,
         [Validators.required, Validators.min(0)],
       ],
+      concurrencyStamp: [this.selectedPurchase.concurrencyStamp || null],
       items: this.fb.array([]),
     });
 
@@ -201,6 +202,7 @@ export class PurchaseComponent implements OnInit {
       invoiceNumber: rawValue.invoiceNumber,
       notes: rawValue.notes,
       discountAmount: rawValue.discountAmount,
+      concurrencyStamp: rawValue.concurrencyStamp,
       items: rawValue.items.map((x: any): CreateUpdatePurchaseItemDto => ({
         medicineId: x.medicineId,
         batchNumber: x.batchNumber,
@@ -218,6 +220,10 @@ export class PurchaseComponent implements OnInit {
       this.isModalOpen = false;
       this.list.get();
     });
+
+    console.log('selectedPurchase', this.selectedPurchase);
+    console.log('rawValue', rawValue);
+    console.log('concurrencyStamp being sent', rawValue.concurrencyStamp);
   }
 
   // Delete purchase

@@ -1,72 +1,325 @@
-<div class="row g-4">
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted">Medicines</h6>
-        <h2>{{ stats.totalMedicines || 0 }}</h2>
+<div class="dashboard-page container-fluid px-2 px-md-3 py-3">
+  <div class="dashboard-header mb-4">
+    <div>
+      <h2 class="dashboard-title mb-1">Pharmacy Dashboard</h2>
+      <p class="dashboard-subtitle mb-0">
+        Overview of inventory, suppliers, customers, purchases, and sales
+      </p>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card primary">
+        <div class="stat-card-body">
+          <div class="stat-icon">
+            <i class="fa fa-capsules"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Medicines</div>
+            <div class="stat-value">{{ stats.totalMedicines || 0 }}</div>
+            <div class="stat-note">Registered medicines</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card info">
+        <div class="stat-card-body">
+          <div class="stat-icon">
+            <i class="fa fa-truck"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Suppliers</div>
+            <div class="stat-value">{{ stats.totalSuppliers || 0 }}</div>
+            <div class="stat-note">Active vendor records</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card success">
+        <div class="stat-card-body">
+          <div class="stat-icon">
+            <i class="fa fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Customers</div>
+            <div class="stat-value">{{ stats.totalCustomers || 0 }}</div>
+            <div class="stat-note">Customer profiles</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card secondary">
+        <div class="stat-card-body">
+          <div class="stat-icon">
+            <i class="fa fa-boxes"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Stock Rows</div>
+            <div class="stat-value">{{ stats.totalStockRows || 0 }}</div>
+            <div class="stat-note">Batch-wise inventory rows</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted">Suppliers</h6>
-        <h2>{{ stats.totalSuppliers || 0 }}</h2>
+  <!-- ALERT + TRANSACTION CARDS -->
+  <div class="row g-4 mb-4">
+    <div class="col-12 col-lg-6">
+      <div class="panel-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Inventory Alerts</h5>
+          <span class="panel-badge">Attention Needed</span>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-12 col-md-6">
+            <div class="stat-card warning compact">
+              <div class="stat-card-body">
+                <div class="stat-icon">
+                  <i class="fa fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">Low Stock</div>
+                  <div class="stat-value">{{ stats.lowStockCount || 0 }}</div>
+                  <div class="stat-note">Below reorder level</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="stat-card danger compact">
+              <div class="stat-card-body">
+                <div class="stat-icon">
+                  <i class="fa fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">Expiring Stock</div>
+                  <div class="stat-value">{{ stats.expiringStockCount || 0 }}</div>
+                  <div class="stat-note">Expired or near expiry</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="panel-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Transactions Summary</h5>
+          <span class="panel-badge neutral">Current Snapshot</span>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-12 col-md-6">
+            <div class="stat-card dark compact">
+              <div class="stat-card-body">
+                <div class="stat-icon">
+                  <i class="fa fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">Purchases</div>
+                  <div class="stat-value">{{ stats.totalPurchases || 0 }}</div>
+                  <div class="stat-note">Incoming stock entries</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="stat-card teal compact">
+              <div class="stat-card-body">
+                <div class="stat-icon">
+                  <i class="fa fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-label">Sales</div>
+                  <div class="stat-value">{{ stats.totalSales || 0 }}</div>
+                  <div class="stat-note">Completed sale records</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY STRIP -->
+    <div class="col-12">
+      <div class="summary-strip">
+        <div class="summary-item">
+          <span class="summary-title">Inventory Health</span>
+          <strong>
+            {{
+            ((stats.lowStockCount || 0) + (stats.expiringStockCount || 0)) === 0
+            ? 'Good'
+            : 'Needs Attention'
+            }}
+          </strong>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-title">Total Operational Records</span>
+          <strong>
+            {{
+            (stats.totalMedicines || 0) +
+            (stats.totalSuppliers || 0) +
+            (stats.totalCustomers || 0) +
+            (stats.totalPurchases || 0) +
+            (stats.totalSales || 0)
+            }}
+          </strong>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted">Customers</h6>
-        <h2>{{ stats.totalCustomers || 0 }}</h2>
+  <!-- CHART SECTION -->
+  <div class="row g-4 mb-4">
+    <div class="col-12 col-xl-6">
+      <div class="panel-card analytics-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Sales vs Purchases</h5>
+          <span class="panel-badge neutral">Trend</span>
+        </div>
+
+        <div class="chart-container">
+          <canvas baseChart [data]="salesPurchasesChartData" [options]="salesPurchasesChartOptions" [type]="'bar'">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <div class="panel-card analytics-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Top Selling Medicines</h5>
+          <span class="panel-badge neutral">Top 5</span>
+        </div>
+
+        <div class="chart-container">
+          <canvas baseChart [data]="topMedicinesChartData" [options]="topMedicinesChartOptions" [type]="'bar'">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <div class="panel-card analytics-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Stock Distribution</h5>
+          <span class="panel-badge neutral">Category</span>
+        </div>
+
+        <div class="chart-container">
+          <canvas baseChart [data]="stockByCategoryChartData" [options]="stockByCategoryChartOptions"
+            [type]="'doughnut'">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <div class="panel-card analytics-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Expiry Timeline</h5>
+          <span class="panel-badge neutral">Risk</span>
+        </div>
+
+        <div class="chart-container">
+          <canvas baseChart [data]="expiryTimelineChartData" [options]="expiryTimelineChartOptions" [type]="'bar'">
+          </canvas>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted">Stock Rows</h6>
-        <h2>{{ stats.totalStockRows || 0 }}</h2>
+  <!-- RECENT TRANSACTIONS -->
+  <div class="row g-4 mb-4">
+    <div class="col-12 col-xl-6">
+      <div class="panel-card transaction-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Recent Purchases</h5>
+          <span class="panel-badge neutral">Last 5</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table transaction-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Number</th>
+                <th>Supplier</th>
+                <th>Date</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let purchase of recentPurchases">
+                <td class="fw-semibold">{{ purchase.purchaseNumber }}</td>
+                <td>{{ purchase.supplierName || 'N/A' }}</td>
+                <td>{{ purchase.purchaseDate | date: 'dd MMM yyyy' }}</td>
+                <td class="text-end fw-semibold">
+                  {{ purchase.netAmount | number: '1.2-2' }}
+                </td>
+              </tr>
+
+              <tr *ngIf="recentPurchases.length === 0">
+                <td colspan="4" class="text-center text-muted py-4">
+                  No recent purchases found
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm border-warning">
-      <div class="card-body">
-        <h6 class="text-muted">Low Stock</h6>
-        <h2>{{ stats.lowStockCount || 0 }}</h2>
-      </div>
-    </div>
-  </div>
+    <div class="col-12 col-xl-6">
+      <div class="panel-card transaction-card h-100">
+        <div class="panel-header">
+          <h5 class="mb-0">Recent Sales</h5>
+          <span class="panel-badge neutral">Last 5</span>
+        </div>
 
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm border-danger">
-      <div class="card-body">
-        <h6 class="text-muted">Expiring Stock</h6>
-        <h2>{{ stats.expiringStockCount || 0 }}</h2>
-      </div>
-    </div>
-  </div>
+        <div class="table-responsive">
+          <table class="table transaction-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Number</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sale of recentSales">
+                <td class="fw-semibold">{{ sale.saleNumber }}</td>
+                <td>{{ sale.customerName || 'Walk-in' }}</td>
+                <td>{{ sale.saleDate | date: 'dd MMM yyyy' }}</td>
+                <td class="text-end fw-semibold">
+                  {{ sale.netAmount | number: '1.2-2' }}
+                </td>
+              </tr>
 
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted">Purchases</h6>
-        <h2>{{ stats.totalPurchases || 0 }}</h2>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm">
-      <div class="card-body">
-        <h6 class="text-muted">Sales</h6>
-        <h2>{{ stats.totalSales || 0 }}</h2>
+              <tr *ngIf="recentSales.length === 0">
+                <td colspan="4" class="text-center text-muted py-4">
+                  No recent sales found
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

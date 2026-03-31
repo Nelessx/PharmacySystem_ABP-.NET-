@@ -200,7 +200,7 @@ public class SaleAppService :
                 .Skip(input.SkipCount)
                 .Take(input.MaxResultCount)
         );
-
+            
         var customers = await _customerRepository.GetListAsync();
 
         var items = sales.Select(sale =>
@@ -217,5 +217,58 @@ public class SaleAppService :
         }).ToList();
 
         return new PagedResultDto<SaleDto>(totalCount, items);
+    }
+
+    public override async Task<SaleDto> UpdateAsync(Guid id, CreateUpdateSaleDto input)
+    {
+        var sale = await Repository.GetAsync(id);
+
+        // 🔴 STEP 1: RESTORE OLD STOCK
+        foreach (var item in sale.Items)
+        {
+            await _stockManager.IncreaseAsync(
+                item.MedicineId,
+                item.BatchNumber!,
+                null,
+                item.Quantity,
+                item.UnitPrice
+            );
+        }
+
+        // 🔵 STEP 2: UPDATE ENTITY
+        await MapToEntityAsync(input, sale);
+        await Repository.UpdateAsync(sale, autoSave: true);
+
+        // 🔴 STEP 3: APPLY NEW SALE (DEDUCT STOCK)
+        foreach (var item in input.Items)
+        {
+            await _stockManager.DecreaseAsync(
+                item.MedicineId,
+                item.BatchNumber!,
+                null,
+                item.Quantity
+            );
+        }
+
+        return ObjectMapper.Map<Sale, SaleDto>(sale);
+    }
+
+    public override async Task DeleteAsync(Guid id)
+    {
+        var sale = await Repository.GetAsync(id);
+
+        // 🔵 Restore stock
+        foreach (var item in sale.Items)
+        {
+            await _stockManager.IncreaseAsync(
+                item.MedicineId,
+                item.BatchNumber!,
+                null,
+                item.Quantity,
+                item.UnitPrice
+            );
+        }
+
+        await Repository.DeleteAsync(id);
     }
 }

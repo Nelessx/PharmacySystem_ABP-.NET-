@@ -7,6 +7,7 @@ export interface CreateUpdatePurchaseDto {
   invoiceNumber?: string | null;
   notes?: string | null;
   discountAmount?: number;
+  concurrencyStamp?: string | null;
   items: CreateUpdatePurchaseItemDto[];
 }
 
@@ -33,6 +34,7 @@ export interface PurchaseDto extends FullAuditedEntityDto<string> {
   totalAmount?: number;
   discountAmount?: number;
   netAmount?: number;
+  concurrencyStamp?: string | null;
   items?: PurchaseItemDto[];
 }
 

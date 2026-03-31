@@ -1572,6 +1572,38 @@
                     "type": "PharmacySystem.Dashboard.DashboardStatsDto",
                     "typeSimple": "PharmacySystem.Dashboard.DashboardStatsDto"
                   }
+                },
+                {
+                  "name": "GetSalesPurchasesTrendAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.SalesPurchasesTrendPointDto>",
+                    "typeSimple": "[PharmacySystem.Dashboard.SalesPurchasesTrendPointDto]"
+                  }
+                },
+                {
+                  "name": "GetTopSellingMedicinesAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.TopSellingMedicineDto>",
+                    "typeSimple": "[PharmacySystem.Dashboard.TopSellingMedicineDto]"
+                  }
+                },
+                {
+                  "name": "GetStockByCategoryAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.StockByCategoryDto>",
+                    "typeSimple": "[PharmacySystem.Dashboard.StockByCategoryDto]"
+                  }
+                },
+                {
+                  "name": "GetExpiryTimelineAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.ExpiryTimelineDto>",
+                    "typeSimple": "[PharmacySystem.Dashboard.ExpiryTimelineDto]"
+                  }
                 }
               ]
             }
@@ -1588,6 +1620,66 @@
               "returnValue": {
                 "type": "PharmacySystem.Dashboard.DashboardStatsDto",
                 "typeSimple": "PharmacySystem.Dashboard.DashboardStatsDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "PharmacySystem.Dashboard.IDashboardAppService"
+            },
+            "GetSalesPurchasesTrendAsync": {
+              "uniqueName": "GetSalesPurchasesTrendAsync",
+              "name": "GetSalesPurchasesTrendAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dashboard/sales-purchases-trend",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.SalesPurchasesTrendPointDto>",
+                "typeSimple": "[PharmacySystem.Dashboard.SalesPurchasesTrendPointDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "PharmacySystem.Dashboard.IDashboardAppService"
+            },
+            "GetTopSellingMedicinesAsync": {
+              "uniqueName": "GetTopSellingMedicinesAsync",
+              "name": "GetTopSellingMedicinesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dashboard/top-selling-medicines",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.TopSellingMedicineDto>",
+                "typeSimple": "[PharmacySystem.Dashboard.TopSellingMedicineDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "PharmacySystem.Dashboard.IDashboardAppService"
+            },
+            "GetStockByCategoryAsync": {
+              "uniqueName": "GetStockByCategoryAsync",
+              "name": "GetStockByCategoryAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dashboard/stock-by-category",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.StockByCategoryDto>",
+                "typeSimple": "[PharmacySystem.Dashboard.StockByCategoryDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "PharmacySystem.Dashboard.IDashboardAppService"
+            },
+            "GetExpiryTimelineAsync": {
+              "uniqueName": "GetExpiryTimelineAsync",
+              "name": "GetExpiryTimelineAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dashboard/expiry-timeline",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<PharmacySystem.Dashboard.ExpiryTimelineDto>",
+                "typeSimple": "[PharmacySystem.Dashboard.ExpiryTimelineDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "PharmacySystem.Dashboard.IDashboardAppService"
@@ -6460,6 +6552,159 @@
         }
       ]
     },
+    "PharmacySystem.Dashboard.ExpiryTimelineDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Label",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "TotalQuantity",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
+    "PharmacySystem.Dashboard.SalesPurchasesTrendPointDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Label",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "PurchaseAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "SalesAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
+    "PharmacySystem.Dashboard.StockByCategoryDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CategoryName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "TotalQuantity",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
+    "PharmacySystem.Dashboard.TopSellingMedicineDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "MedicineName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "TotalQuantitySold",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
     "PharmacySystem.Medicines.CategoryLookupDto": {
       "baseType": null,
       "isEnum": false,
@@ -6846,6 +7091,19 @@
           "isNullable": false
         },
         {
+          "name": "ConcurrencyStamp",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
           "name": "Items",
           "jsonName": null,
           "type": "[PharmacySystem.Purchases.CreateUpdatePurchaseItemDto]",
@@ -7092,6 +7350,19 @@
           "maximum": null,
           "regex": null,
           "isNullable": false
+        },
+        {
+          "name": "ConcurrencyStamp",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
         },
         {
           "name": "Items",

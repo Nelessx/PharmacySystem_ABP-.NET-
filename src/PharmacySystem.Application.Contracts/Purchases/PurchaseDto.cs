@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Entities;
 
 namespace PharmacySystem.Purchases;
 
 // Output DTO for Purchase (header + items)
-public class PurchaseDto : FullAuditedEntityDto<Guid>
+public class PurchaseDto : FullAuditedEntityDto<Guid>, IHasConcurrencyStamp
 {
     // Purchase number shown to user
     public string PurchaseNumber { get; set; } = string.Empty;
@@ -34,6 +35,9 @@ public class PurchaseDto : FullAuditedEntityDto<Guid>
     // Final total
     public decimal NetAmount { get; set; }
 
-    // List of purchase items
+    // Concurrency stamp for ABP optimistic concurrency
+    public string? ConcurrencyStamp { get; set; }
+
+    // List of purchase items   
     public List<PurchaseItemDto> Items { get; set; } = new();
 }

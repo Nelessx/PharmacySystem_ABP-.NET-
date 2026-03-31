@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 
 namespace PharmacySystem.Dashboard;
@@ -7,4 +8,9 @@ namespace PharmacySystem.Dashboard;
 public interface IDashboardAppService : IApplicationService
 {
     Task<DashboardStatsDto> GetStatsAsync();
+    Task<List<SalesPurchasesTrendPointDto>> GetSalesPurchasesTrendAsync();
+    Task<List<TopSellingMedicineDto>> GetTopSellingMedicinesAsync();
+    Task<List<StockByCategoryDto>> GetStockByCategoryAsync();
+    Task<List<ExpiryTimelineDto>> GetExpiryTimelineAsync();
+
 }
