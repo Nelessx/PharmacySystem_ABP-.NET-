@@ -1,20 +1,26 @@
-import { Component, inject } from '@angular/core';
-import { AuthService, LocalizationPipe } from '@abp/ng.core';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService, ConfigStateService } from '@abp/ng.core';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
-  imports: [LocalizationPipe]
+  styleUrl: './home.component.scss',
 })
-export class HomeComponent {
-  private authService = inject(AuthService);
+export class HomeComponent implements OnInit {
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly configState = inject(ConfigStateService);
 
-  get hasLoggedIn(): boolean {
-    return this.authService.isAuthenticated
+  ngOnInit(): void {
+    const currentUser = this.configState.getOne('currentUser');
+
+    if (currentUser?.isAuthenticated) {
+      this.router.navigateByUrl('/dashboard');
+    }
   }
 
-  login() {
+  login(): void {
     this.authService.navigateToLogin();
   }
 }
