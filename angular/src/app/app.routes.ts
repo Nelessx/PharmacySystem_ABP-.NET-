@@ -1,11 +1,15 @@
 import { authGuard, permissionGuard } from '@abp/ng.core';
 import { Routes } from '@angular/router';
+import { eLayoutType } from '@abp/ng.core';
 
 export const APP_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./home/home.component').then(c => c.HomeComponent),
+    data: {
+      layout: eLayoutType.empty,
+    },
   },
   {
     path: 'account',
@@ -90,5 +94,6 @@ export const APP_ROUTES: Routes = [
     path: 'dashboard',
     loadComponent: () =>
       import('./dashboard/dashboard.component').then(c => c.DashboardComponent),
+    canActivate: [authGuard],
   },
 ];

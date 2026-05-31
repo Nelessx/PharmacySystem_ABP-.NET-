@@ -1,27 +1,266 @@
-/* Styles for the home component */
-.card-bg-image {
-  position: absolute;
-  width: 630px;
-  height: auto;
-  bottom: 0;
-  right: 0;
-  z-index: 1;
+.public-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #111827;
 }
 
-.starting-content {
-  position: relative;
-  z-index: 2;
+.public-header {
+  height: 82px;
+  padding: 0 5vw;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
 
-@media (min-width: 1199px) {
-  .h-lg-100 {
-    height: 100% !important;
+.brand-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #0f766e;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+}
+
+.brand-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand-subtitle {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin-top: 0.1rem;
+}
+
+.login-btn {
+  min-width: 104px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.public-main {
+  padding: 4.5rem 5vw;
+}
+
+.hero-section {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(420px, 0.98fr);
+  gap: 4rem;
+  align-items: center;
+}
+
+.system-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: #e6f4f1;
+  color: #0f766e;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1.4rem;
+}
+
+.hero-content h1 {
+  max-width: 720px;
+  font-size: clamp(2.4rem, 4.2vw, 4.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  font-weight: 850;
+  margin: 0 0 1.4rem;
+  color: #111827;
+}
+
+.hero-description {
+  max-width: 640px;
+  font-size: 1.08rem;
+  line-height: 1.8;
+  color: #4b5563;
+  margin-bottom: 2rem;
+}
+
+.hero-actions {
+  margin-bottom: 2rem;
+}
+
+.hero-actions .btn {
+  border-radius: 10px;
+  padding: 0.85rem 1.35rem;
+  font-weight: 700;
+}
+
+.trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.trust-row div {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 0.95rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.trust-row i {
+  color: #0f766e;
+}
+
+.overview-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  padding: 1.5rem;
+}
+
+.overview-header {
+  padding: 0.5rem 0.25rem 1.25rem;
+  border-bottom: 1px solid #eef0f4;
+  margin-bottom: 1rem;
+}
+
+.overview-header h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+}
+
+.overview-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.module-item {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: #f9fafb;
+  border: 1px solid #eef0f4;
+}
+
+.module-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #e6f4f1;
+  color: #0f766e;
+  font-size: 1.15rem;
+}
+
+.module-item h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0 0 0.3rem;
+}
+
+.module-item p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.feature-strip {
+  max-width: 1180px;
+  margin: 4rem auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.feature-box {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 1.4rem;
+}
+
+.feature-box span {
+  display: inline-flex;
+  color: #0f766e;
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+}
+
+.feature-box h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 0.45rem;
+}
+
+.feature-box p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+@media (max-width: 992px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .overview-card {
+    max-width: 720px;
+  }
+
+  .feature-strip {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (min-width: 768px) {
-  .h-md-100 {
-    height: 100% !important;
+@media (max-width: 576px) {
+  .public-header {
+    padding: 0 1rem;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .public-main {
+    padding: 2.5rem 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.25rem;
+  }
+
+  .trust-row {
+    flex-direction: column;
+  }
+
+  .module-item {
+    grid-template-columns: 1fr;
   }
 }
