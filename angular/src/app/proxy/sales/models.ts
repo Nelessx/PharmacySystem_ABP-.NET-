@@ -12,6 +12,7 @@ export interface CreateUpdateSaleDto {
 export interface CreateUpdateSaleItemDto {
   medicineId: string;
   batchNumber?: string | null;
+  expiryDate?: string | null;
   quantity?: number;
   unitPrice?: number;
 }
@@ -42,6 +43,7 @@ export interface SaleItemDto extends EntityDto<string> {
   medicineId?: string;
   medicineName?: string | null;
   batchNumber?: string | null;
+  expiryDate?: string | null;
   quantity?: number;
   unitPrice?: number;
   lineTotal?: number;

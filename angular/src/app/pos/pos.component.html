@@ -1,0 +1,405 @@
+<div class="pos-page">
+  <header class="pos-header">
+    <div class="header-title">
+      <span class="eyebrow">Pharmacy POS</span>
+      <h2>Counter Sale</h2>
+      <p>Batch-aware billing for fast pharmacy checkout.</p>
+    </div>
+
+    <div class="header-metrics">
+      <div class="metric-tile">
+        <span>Invoice</span>
+        <strong>{{ saleNumberPreview }}</strong>
+      </div>
+
+      <div class="metric-tile compact">
+        <span>Lines</span>
+        <strong>{{ cart.length }}</strong>
+      </div>
+
+      <div class="metric-tile compact">
+        <span>Qty</span>
+        <strong>{{ totalItems }}</strong>
+      </div>
+
+      <button type="button" class="icon-action danger" title="Clear sale" (click)="clearCart()">
+        <i class="fas fa-rotate-left"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="pos-layout">
+    <section class="pos-panel medicines-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="section-kicker">Catalog</span>
+          <h5>Medicines</h5>
+        </div>
+
+        <span class="panel-count">{{ filteredMedicines.length }} shown</span>
+      </div>
+
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+
+        <input type="text" class="form-control" placeholder="Search medicine, generic name, or barcode"
+          [(ngModel)]="searchText" autofocus />
+
+        <button type="button" class="clear-search" *ngIf="searchText" title="Clear search" (click)="searchText = ''">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="medicine-list" *ngIf="!isLoading; else loadingTemplate">
+        <button type="button" class="medicine-card" *ngFor="let medicine of filteredMedicines"
+          (click)="addMedicine(medicine)" [disabled]="getTotalStock(medicine.id) <= 0"
+          [class.out-of-stock-card]="getTotalStock(medicine.id) <= 0">
+          <div class="medicine-card-main">
+            <span class="medicine-avatar">
+              <i class="fas fa-capsules"></i>
+            </span>
+
+            <div class="medicine-info">
+              <strong>{{ medicine.name }}</strong>
+
+              <small *ngIf="medicine.genericName">
+                {{ medicine.genericName }}
+              </small>
+
+              <small *ngIf="medicine.barcode">
+                #{{ medicine.barcode }}
+              </small>
+            </div>
+          </div>
+
+          <div class="medicine-card-side">
+            <strong>{{ medicine.salePrice || 0 | number: '1.2-2' }}</strong>
+            <span *ngIf="medicine.unit">{{ medicine.unit }}</span>
+          </div>
+
+          <div class="medicine-card-bottom">
+            <span class="stock-pill" [ngClass]="getStockStatusClass(medicine)">
+              {{ getStockStatusText(medicine) }}
+            </span>
+
+            <span class="add-pill">
+              <i class="fas fa-plus"></i>
+            </span>
+          </div>
+        </button>
+
+        <div class="empty-state" *ngIf="filteredMedicines.length === 0">
+          <i class="fas fa-pills"></i>
+          <h6>No medicines found</h6>
+          <p>Try a different name, generic name, or barcode.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pos-panel cart-panel">
+      <div class="panel-heading cart-heading">
+        <div>
+          <span class="section-kicker">Invoice</span>
+          <h5>Sale Cart</h5>
+        </div>
+
+        <div class="cart-total-chip">
+          <span>Total</span>
+          <strong>{{ netTotal | number: '1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <div class="cart-list" *ngIf="cart.length; else emptyCartTemplate">
+        <div class="cart-card" *ngFor="let item of cart; let i = index">
+          <div class="cart-card-header">
+            <div class="cart-title">
+              <span class="line-number">{{ i + 1 }}</span>
+
+              <div>
+                <h6>{{ item.medicineName }}</h6>
+
+                <div class="cart-muted-info">
+                  <span *ngIf="item.barcode">#{{ item.barcode }}</span>
+                  <span>Available {{ item.availableQuantity }}</span>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="remove-item-btn" title="Remove item" (click)="removeItem(i)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+
+          <div class="batch-section">
+            <label>Batch</label>
+
+            <select class="form-select" [ngModel]="item.batchNumber" (ngModelChange)="updateBatch(item, $event)">
+              <option *ngFor="let stock of getAvailableBatches(item.medicineId)" [value]="stock.batchNumber">
+                {{ getBatchLabel(stock) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="cart-info-grid">
+            <div>
+              <span>Expiry</span>
+
+              <strong class="expiry-pill" [class.expiring]="isExpiringSoon(item.expiryDate)">
+                {{ formatDate(item.expiryDate) }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Line Total</span>
+              <strong>{{ item.lineTotal | number: '1.2-2' }}</strong>
+            </div>
+          </div>
+
+          <div class="cart-control-grid">
+            <div>
+              <label>Quantity</label>
+
+              <div class="quantity-stepper">
+                <button type="button" title="Decrease quantity" (click)="decreaseQuantity(item)">
+                  <i class="fas fa-minus"></i>
+                </button>
+
+                <input type="number" min="1" [(ngModel)]="item.quantity" (ngModelChange)="updateQuantity(item)" />
+
+                <button type="button" title="Increase quantity" (click)="increaseQuantity(item)">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label>Rate</label>
+
+              <input type="number" min="0" step="0.01" class="form-control rate-input" [(ngModel)]="item.unitPrice"
+                (ngModelChange)="updatePrice(item)" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="pos-panel checkout-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="section-kicker">Payment</span>
+          <h5>Checkout</h5>
+        </div>
+      </div>
+
+      <div class="checkout-form">
+        <div class="field-group">
+          <label class="form-label">Customer</label>
+
+          <select class="form-select" [(ngModel)]="selectedCustomerId">
+            <option [ngValue]="null">Walk-in Customer</option>
+
+            <option *ngFor="let customer of customers" [ngValue]="customer.id">
+              {{ customer.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="form-label">Sale Date</label>
+
+          <input type="date" class="form-control" [(ngModel)]="saleDate" />
+        </div>
+
+        <div class="field-group">
+          <label class="form-label">Discount Amount</label>
+
+          <input type="number" min="0" class="form-control" [class.is-invalid]="discountInvalid"
+            [(ngModel)]="discountAmount" />
+
+          <div class="invalid-feedback d-block" *ngIf="discountInvalid">
+            Discount cannot be negative or greater than subtotal.
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="form-label">Notes</label>
+
+          <textarea class="form-control" rows="3" placeholder="Optional notes" [(ngModel)]="notes"></textarea>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <div>
+          <span>Items</span>
+          <strong>{{ cart.length }}</strong>
+        </div>
+
+        <div>
+          <span>Total Quantity</span>
+          <strong>{{ totalItems }}</strong>
+        </div>
+
+        <div>
+          <span>Subtotal</span>
+          <strong>{{ subtotal | number: '1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <span>Discount</span>
+          <strong>{{ discountAmount || 0 | number: '1.2-2' }}</strong>
+        </div>
+
+        <div class="net-total">
+          <span>Net Total</span>
+          <strong>{{ netTotal | number: '1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <button type="button" class="btn complete-sale-btn" [disabled]="isSaleInvalid" (click)="completeSale()">
+        <i class="fas fa-check-circle"></i>
+        {{ isSaving ? 'Processing Sale...' : 'Complete Sale' }}
+      </button>
+    </aside>
+  </main>
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="empty-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <h6>Loading medicines</h6>
+    <p>Please wait while stock data is loaded.</p>
+  </div>
+</ng-template>
+
+<ng-template #emptyCartTemplate>
+  <div class="empty-cart">
+    <i class="fas fa-cart-shopping"></i>
+    <h5>No Items Added</h5>
+    <p>Search or scan a medicine to start a sale.</p>
+  </div>
+</ng-template>
+
+<abp-modal [(visible)]="showReceiptModal" [options]="{ size: 'lg' }">
+  <ng-template #abpHeader>
+    <div class="receipt-modal-header">
+      <div>
+        <h4>Sale Completed</h4>
+        <p *ngIf="lastReceipt">
+          Receipt for {{ lastReceipt.saleNumber }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <div class="receipt-preview" *ngIf="lastReceipt">
+      <div class="receipt-print-area thermal-receipt">
+        <div class="thermal-header">
+          <h2>PharmacySystem</h2>
+          <p>Pharmacy Management System</p>
+          <p>Sales Receipt</p>
+        </div>
+
+        <div class="thermal-line"></div>
+
+        <div class="thermal-info">
+          <div>
+            <span>Sale No:</span>
+            <strong>{{ lastReceipt.saleNumber }}</strong>
+          </div>
+
+          <div>
+            <span>Date:</span>
+            <strong>{{ lastReceipt.saleDate | date: 'yyyy-MM-dd' }}</strong>
+          </div>
+
+          <div>
+            <span>Time:</span>
+            <strong>{{ lastReceipt.createdAt | date: 'HH:mm' }}</strong>
+          </div>
+
+          <div>
+            <span>Customer:</span>
+            <strong>{{ lastReceipt.customerName }}</strong>
+          </div>
+        </div>
+
+        <div class="thermal-line"></div>
+
+        <table class="thermal-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="text-end">Qty</th>
+              <th class="text-end">Rate</th>
+              <th class="text-end">Amt</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of lastReceipt.items">
+              <td>
+                <strong>{{ item.medicineName }}</strong>
+                <small>
+                  Batch: {{ item.batchNumber || '-' }}
+                  <br />
+                  Exp: {{ formatDate(item.expiryDate) }}
+                </small>
+              </td>
+
+              <td class="text-end">{{ item.quantity }}</td>
+              <td class="text-end">{{ item.unitPrice | number: '1.2-2' }}</td>
+              <td class="text-end">{{ item.lineTotal | number: '1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="thermal-line"></div>
+
+        <div class="thermal-totals">
+          <div>
+            <span>Subtotal</span>
+            <strong>{{ lastReceipt.subtotal | number: '1.2-2' }}</strong>
+          </div>
+
+          <div>
+            <span>Discount</span>
+            <strong>{{ lastReceipt.discountAmount | number: '1.2-2' }}</strong>
+          </div>
+
+          <div class="grand-total">
+            <span>NET TOTAL</span>
+            <strong>{{ lastReceipt.netTotal | number: '1.2-2' }}</strong>
+          </div>
+        </div>
+
+        <div class="thermal-line"></div>
+
+        <div class="thermal-footer">
+          <p>Thank you for your purchase.</p>
+          <small>This is a computer-generated receipt.</small>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button type="button" class="btn btn-secondary" (click)="closeReceiptModal()">
+      Close
+    </button>
+
+    <button type="button" class="btn btn-outline-primary" (click)="newSale()">
+      New Sale
+    </button>
+
+    <button type="button" class="btn btn-outline-success" (click)="downloadReceiptPdf()">
+      <i class="fas fa-file-pdf me-1"></i>
+      Download PDF
+    </button>
+
+    <button type="button" class="btn btn-primary" (click)="printReceipt()">
+      <i class="fas fa-print me-1"></i>
+      Print Receipt
+    </button>
+  </ng-template>
+</abp-modal>

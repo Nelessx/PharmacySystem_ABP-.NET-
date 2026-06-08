@@ -61,6 +61,14 @@ function configureRoutes() {
       requiredPolicy: 'PharmacySystem.Sales',
     },
     {
+      path: '/pos',
+      name: '::Menu:POS',
+      iconClass: 'fas fa-cash-register',
+      order: 7.5,
+      layout: eLayoutType.application,
+      requiredPolicy: 'PharmacySystem.Sales',
+    },
+    {
       path: '/stocks',
       name: '::Menu:Stock',
       iconClass: 'fas fa-boxes',

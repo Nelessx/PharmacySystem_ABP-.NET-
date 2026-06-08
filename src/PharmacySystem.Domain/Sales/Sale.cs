@@ -113,7 +113,8 @@ public class Sale : FullAuditedAggregateRoot<Guid>
         Guid medicineId,
         int quantity,
         decimal unitPrice,
-        string? batchNumber = null
+        string? batchNumber = null,
+        DateTime? expiryDate = null
     )
     {
         var item = new SaleItem(
@@ -121,7 +122,8 @@ public class Sale : FullAuditedAggregateRoot<Guid>
             medicineId,
             quantity,
             unitPrice,
-            batchNumber
+            batchNumber,
+            expiryDate
         );
 
         _items.Add(item);

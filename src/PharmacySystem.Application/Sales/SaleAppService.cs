@@ -69,7 +69,8 @@ public class SaleAppService :
                 item.MedicineId,
                 item.Quantity,
                 item.UnitPrice,
-                item.BatchNumber
+                item.BatchNumber,
+                item.ExpiryDate
             );
         }
 
@@ -95,7 +96,8 @@ public class SaleAppService :
                 item.MedicineId,
                 item.Quantity,
                 item.UnitPrice,
-                item.BatchNumber
+                item.BatchNumber,
+                item.ExpiryDate
             );
         }
 
@@ -111,7 +113,7 @@ public class SaleAppService :
             await _stockManager.DecreaseAsync(
                 item.MedicineId,
                 item.BatchNumber ?? throw new ArgumentException("Batch number is required for stock deduction."),
-                null,
+                item.ExpiryDate,
                 item.Quantity
             );
         }
@@ -223,13 +225,13 @@ public class SaleAppService :
     {
         var sale = await Repository.GetAsync(id);
 
-        // 🔴 STEP 1: RESTORE OLD STOCK
+        // 🔴 STEP 1: RESTORE OLD STOCK (with ExpiryDate matching)
         foreach (var item in sale.Items)
         {
             await _stockManager.IncreaseAsync(
                 item.MedicineId,
                 item.BatchNumber!,
-                null,
+                item.ExpiryDate,
                 item.Quantity,
                 item.UnitPrice
             );
@@ -239,13 +241,13 @@ public class SaleAppService :
         await MapToEntityAsync(input, sale);
         await Repository.UpdateAsync(sale, autoSave: true);
 
-        // 🔴 STEP 3: APPLY NEW SALE (DEDUCT STOCK)
+        // 🟢 STEP 3: APPLY NEW SALE (DEDUCT STOCK with ExpiryDate matching)
         foreach (var item in input.Items)
         {
             await _stockManager.DecreaseAsync(
                 item.MedicineId,
                 item.BatchNumber!,
-                null,
+                item.ExpiryDate,
                 item.Quantity
             );
         }
@@ -257,13 +259,13 @@ public class SaleAppService :
     {
         var sale = await Repository.GetAsync(id);
 
-        // 🔵 Restore stock
+        // 🟢 Restore stock (with ExpiryDate matching)
         foreach (var item in sale.Items)
         {
             await _stockManager.IncreaseAsync(
                 item.MedicineId,
                 item.BatchNumber!,
-                null,
+                item.ExpiryDate,
                 item.Quantity,
                 item.UnitPrice
             );

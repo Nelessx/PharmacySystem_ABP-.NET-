@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace PharmacySystem.HealthChecks;
@@ -24,6 +25,11 @@ public static class HealthChecksBuilderExtensions
         if (string.IsNullOrEmpty(healthCheckUrl))
         {
             healthCheckUrl = "/health-status";
+        }
+
+        if (configuration.GetValue<bool>("App:DisableHealthChecksUi"))
+        {
+            return;
         }
 
         var healthChecksUiBuilder = services.AddHealthChecksUI(settings =>

@@ -12,6 +12,9 @@ public class SaleItem : Entity<Guid>
     // Optional batch number for batch-based stock deduction later
     public string? BatchNumber { get; private set; }
 
+    // Optional expiry date for batch-based stock tracking
+    public DateTime? ExpiryDate { get; private set; }
+
     // Quantity sold
     public int Quantity { get; private set; }
 
@@ -30,13 +33,15 @@ public class SaleItem : Entity<Guid>
         Guid medicineId,
         int quantity,
         decimal unitPrice,
-        string? batchNumber = null
+        string? batchNumber = null,
+        DateTime? expiryDate = null
     ) : base(id)
     {
         SetMedicine(medicineId);
         SetQuantity(quantity);
         SetUnitPrice(unitPrice);
         SetBatchNumber(batchNumber);
+        SetExpiryDate(expiryDate);
 
         RecalculateLineTotal();
     }
@@ -82,6 +87,12 @@ public class SaleItem : Entity<Guid>
         BatchNumber = string.IsNullOrWhiteSpace(batchNumber)
             ? null
             : batchNumber.Trim();
+    }
+
+    // Sets optional expiry date
+    public void SetExpiryDate(DateTime? expiryDate)
+    {
+        ExpiryDate = expiryDate;
     }
 
     // Recalculates line total
