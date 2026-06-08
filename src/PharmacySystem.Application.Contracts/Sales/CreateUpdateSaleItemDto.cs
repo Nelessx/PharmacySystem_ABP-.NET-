@@ -14,6 +14,9 @@ public class CreateUpdateSaleItemDto
     [StringLength(64)]
     public string? BatchNumber { get; set; }
 
+    // Optional expiry date for batch tracking
+    public DateTime? ExpiryDate { get; set; }
+
     // Quantity must be greater than zero
     [Range(1, int.MaxValue)]
     public int Quantity { get; set; }

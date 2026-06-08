@@ -15,6 +15,9 @@ public class SaleItemDto : EntityDto<Guid>
     // Optional batch number
     public string? BatchNumber { get; set; }
 
+    // Optional expiry date for batch tracking
+    public DateTime? ExpiryDate { get; set; }
+
     // Quantity sold
     public int Quantity { get; set; }
 

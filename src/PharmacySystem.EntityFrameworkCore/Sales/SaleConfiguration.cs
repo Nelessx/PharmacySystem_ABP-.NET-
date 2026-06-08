@@ -53,6 +53,8 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
             b.Property(x => x.BatchNumber)
                 .HasMaxLength(64);
 
+            b.Property(x => x.ExpiryDate);
+
             b.Property(x => x.Quantity)
                 .IsRequired();
 
