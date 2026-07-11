@@ -141,6 +141,8 @@ public class SaleAppService :
     // Returns customers for Sale dropdown
     public async Task<ListResultDto<CustomerLookupDto>> GetCustomerLookupAsync()
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Sales.Default);
+
         var customers = await _customerRepository.GetListAsync();
 
         var items = customers
@@ -159,6 +161,8 @@ public class SaleAppService :
     // Returns medicines for Sale item dropdown
     public async Task<ListResultDto<MedicineLookupDto>> GetMedicineLookupAsync()
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Sales.Default);
+
         var medicines = await _medicineRepository.GetListAsync();
 
         var items = medicines

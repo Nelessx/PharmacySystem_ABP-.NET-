@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using PharmacySystem.Medicines;
+using PharmacySystem.Permissions;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -26,6 +27,10 @@ public class StockAppService :
         : base(repository)
     {
         _medicineRepository = medicineRepository;
+
+        // Require the Stock permission for Get/GetList and the custom endpoints below.
+        GetPolicyName = PharmacySystemPermissions.Stock.Default;
+        GetListPolicyName = PharmacySystemPermissions.Stock.Default;
     }
 
     // Returns one stock record with medicine name
@@ -74,6 +79,8 @@ public class StockAppService :
     // Returns stock rows where quantity is below or equal to medicine reorder level
     public async Task<ListResultDto<LowStockDto>> GetLowStockAsync()
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Stock.Default);
+
         var stocks = await Repository.GetListAsync();
         var medicines = await _medicineRepository.GetListAsync();
 
@@ -103,6 +110,8 @@ public class StockAppService :
     // Returns stock rows that are expired or expiring within the given number of days
     public async Task<ListResultDto<ExpiringStockDto>> GetExpiringStockAsync(int days = 30)
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Stock.Default);
+
         var stocks = await Repository.GetListAsync();
         var medicines = await _medicineRepository.GetListAsync();
 

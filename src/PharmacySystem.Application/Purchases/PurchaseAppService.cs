@@ -133,6 +133,8 @@ public class PurchaseAppService :
     // Returns suppliers for Purchase dropdown
     public async Task<ListResultDto<SupplierLookupDto>> GetSupplierLookupAsync()
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Purchases.Default);
+
         // Get all suppliers from database
         var suppliers = await _supplierRepository.GetListAsync();
 
@@ -152,6 +154,8 @@ public class PurchaseAppService :
     // Returns medicines for Purchase item dropdown
     public async Task<ListResultDto<MedicineLookupDto>> GetMedicineLookupAsync()
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Purchases.Default);
+
         // Get all medicines from database
         var medicines = await _medicineRepository.GetListAsync();
 

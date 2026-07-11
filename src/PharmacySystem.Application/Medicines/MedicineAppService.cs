@@ -69,6 +69,8 @@ public class MedicineAppService :
 
     public async Task<ListResultDto<CategoryLookupDto>> GetCategoryLookupAsync()
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Medicines.Default);
+
         var categories = await _categoryRepository.GetListAsync();
 
         var items = categories
