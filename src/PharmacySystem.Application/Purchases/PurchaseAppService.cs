@@ -229,16 +229,7 @@ public class PurchaseAppService :
         // Get total count before paging
         var totalCount = await AsyncExecuter.CountAsync(queryable);
 
-        // Honor client-supplied sorting; default to newest-first.
-        var query = string.IsNullOrWhiteSpace(input.Sorting)
-            ? queryable.OrderByDescending(x => x.CreationTime)
-            : ApplySorting(queryable, input);
-
-        var purchases = await AsyncExecuter.ToListAsync(
-            query
-                .Skip(input.SkipCount)
-                .Take(input.MaxResultCount)
-        );
+        var purchases = await GetSortedPurchasePageAsync(queryable, input);
 
         // Resolve names only for the suppliers referenced on this page.
         var supplierIds = purchases.Select(x => x.SupplierId).Distinct().ToList();
@@ -260,6 +251,48 @@ public class PurchaseAppService :
         }).ToList();
 
         return new PagedResultDto<PurchaseDto>(totalCount, items);
+    }
+
+    // Applies paging + sorting to the purchase query and returns the requested page.
+    //
+    // "supplierName" is a display field resolved from the Supplier table, not a
+    // column on the Purchase entity, so the base ApplySorting cannot handle it and
+    // would throw. Translate it into a join-based sort in SQL; fall back to the
+    // base behaviour for real entity columns and newest-first when unsorted.
+    private async Task<List<Purchase>> GetSortedPurchasePageAsync(
+        IQueryable<Purchase> queryable, PagedAndSortedResultRequestDto input)
+    {
+        var sorting = input.Sorting?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(sorting) &&
+            sorting.StartsWith("supplierName", StringComparison.OrdinalIgnoreCase))
+        {
+            var descending = sorting.EndsWith("desc", StringComparison.OrdinalIgnoreCase);
+            var supplierQueryable = await _supplierRepository.GetQueryableAsync();
+
+            var joined = from purchase in queryable
+                         join supplier in supplierQueryable on purchase.SupplierId equals supplier.Id
+                         select new { Purchase = purchase, supplier.Name };
+
+            joined = descending
+                ? joined.OrderByDescending(x => x.Name).ThenBy(x => x.Purchase.Id)
+                : joined.OrderBy(x => x.Name).ThenBy(x => x.Purchase.Id);
+
+            return await AsyncExecuter.ToListAsync(
+                joined
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
+                    .Select(x => x.Purchase));
+        }
+
+        var query = string.IsNullOrWhiteSpace(sorting)
+            ? queryable.OrderByDescending(x => x.CreationTime)
+            : ApplySorting(queryable, input);
+
+        return await AsyncExecuter.ToListAsync(
+            query
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount));
     }
 
     public override async Task<PurchaseDto> UpdateAsync(Guid id, CreateUpdatePurchaseDto input)

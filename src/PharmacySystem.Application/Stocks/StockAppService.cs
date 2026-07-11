@@ -54,16 +54,7 @@ public class StockAppService :
 
         var totalCount = await AsyncExecuter.CountAsync(queryable);
 
-        // Honor client-supplied sorting; default to newest-first.
-        var query = string.IsNullOrWhiteSpace(input.Sorting)
-            ? queryable.OrderByDescending(x => x.CreationTime)
-            : ApplySorting(queryable, input);
-
-        var stocks = await AsyncExecuter.ToListAsync(
-            query
-                .Skip(input.SkipCount)
-                .Take(input.MaxResultCount)
-        );
+        var stocks = await GetSortedStockPageAsync(queryable, input);
 
         // Resolve names only for the medicines referenced on this page.
         var medicineIds = stocks.Select(x => x.MedicineId).Distinct().ToList();
@@ -85,6 +76,50 @@ public class StockAppService :
         }).ToList();
 
         return new PagedResultDto<StockDto>(totalCount, items);
+    }
+
+    // Applies paging + sorting to the stock query and returns the requested page.
+    //
+    // "medicineName" is a display field resolved from the Medicine table, not a
+    // column on the Stock entity, so the base ApplySorting (which sorts the Stock
+    // query directly via dynamic LINQ) cannot handle it and would throw
+    // "No property or field 'medicineName' exists in type 'Stock'". Translate it
+    // into a join-based sort in SQL so paging stays correct; fall back to the
+    // base behaviour for real entity columns and newest-first when unsorted.
+    private async Task<List<Stock>> GetSortedStockPageAsync(
+        IQueryable<Stock> queryable, PagedAndSortedResultRequestDto input)
+    {
+        var sorting = input.Sorting?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(sorting) &&
+            sorting.StartsWith("medicineName", StringComparison.OrdinalIgnoreCase))
+        {
+            var descending = sorting.EndsWith("desc", StringComparison.OrdinalIgnoreCase);
+            var medicineQueryable = await _medicineRepository.GetQueryableAsync();
+
+            var joined = from stock in queryable
+                         join medicine in medicineQueryable on stock.MedicineId equals medicine.Id
+                         select new { Stock = stock, medicine.Name };
+
+            joined = descending
+                ? joined.OrderByDescending(x => x.Name).ThenBy(x => x.Stock.Id)
+                : joined.OrderBy(x => x.Name).ThenBy(x => x.Stock.Id);
+
+            return await AsyncExecuter.ToListAsync(
+                joined
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
+                    .Select(x => x.Stock));
+        }
+
+        var query = string.IsNullOrWhiteSpace(sorting)
+            ? queryable.OrderByDescending(x => x.CreationTime)
+            : ApplySorting(queryable, input);
+
+        return await AsyncExecuter.ToListAsync(
+            query
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount));
     }
 
     // Returns stock rows where quantity is below or equal to medicine reorder level
