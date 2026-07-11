@@ -234,16 +234,7 @@ public class SaleAppService :
 
         var totalCount = await AsyncExecuter.CountAsync(queryable);
 
-        // Honor client-supplied sorting; default to newest-first.
-        var query = string.IsNullOrWhiteSpace(input.Sorting)
-            ? queryable.OrderByDescending(x => x.CreationTime)
-            : ApplySorting(queryable, input);
-
-        var sales = await AsyncExecuter.ToListAsync(
-            query
-                .Skip(input.SkipCount)
-                .Take(input.MaxResultCount)
-        );
+        var sales = await GetSortedSalePageAsync(queryable, input);
 
         // Resolve names only for the customers referenced on this page.
         var customerIds = sales.Where(x => x.CustomerId.HasValue)
@@ -271,6 +262,51 @@ public class SaleAppService :
         }).ToList();
 
         return new PagedResultDto<SaleDto>(totalCount, items);
+    }
+
+    // Applies paging + sorting to the sale query and returns the requested page.
+    //
+    // "customerName" is a display field resolved from the Customer table, not a
+    // column on the Sale entity, so the base ApplySorting cannot handle it and
+    // would throw. Translate it into a LEFT-join sort in SQL (walk-in sales have
+    // no customer and must still appear); fall back to the base behaviour for
+    // real entity columns and newest-first when unsorted.
+    private async Task<List<Sale>> GetSortedSalePageAsync(
+        IQueryable<Sale> queryable, PagedAndSortedResultRequestDto input)
+    {
+        var sorting = input.Sorting?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(sorting) &&
+            sorting.StartsWith("customerName", StringComparison.OrdinalIgnoreCase))
+        {
+            var descending = sorting.EndsWith("desc", StringComparison.OrdinalIgnoreCase);
+            var customerQueryable = await _customerRepository.GetQueryableAsync();
+
+            var joined = from sale in queryable
+                         join customer in customerQueryable
+                             on sale.CustomerId equals (Guid?)customer.Id into cj
+                         from customer in cj.DefaultIfEmpty()
+                         select new { Sale = sale, Name = customer != null ? customer.Name : null };
+
+            joined = descending
+                ? joined.OrderByDescending(x => x.Name).ThenBy(x => x.Sale.Id)
+                : joined.OrderBy(x => x.Name).ThenBy(x => x.Sale.Id);
+
+            return await AsyncExecuter.ToListAsync(
+                joined
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
+                    .Select(x => x.Sale));
+        }
+
+        var query = string.IsNullOrWhiteSpace(sorting)
+            ? queryable.OrderByDescending(x => x.CreationTime)
+            : ApplySorting(queryable, input);
+
+        return await AsyncExecuter.ToListAsync(
+            query
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount));
     }
 
     public override async Task<SaleDto> UpdateAsync(Guid id, CreateUpdateSaleDto input)

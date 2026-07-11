@@ -1,11 +1,14 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using PharmacySystem.Categories;
+using PharmacySystem.Customers;
 using PharmacySystem.Medicines;
 using PharmacySystem.Sales;
 using PharmacySystem.Stocks;
 using Shouldly;
 using Volo.Abp;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Repositories;
 using Xunit;
 
@@ -20,6 +23,7 @@ public class SaleAppServiceTests : PharmacySystemEntityFrameworkCoreTestBase
     private readonly IRepository<Sale, Guid> _saleRepository;
     private readonly IRepository<Medicine, Guid> _medicineRepository;
     private readonly IRepository<Category, Guid> _categoryRepository;
+    private readonly IRepository<Customer, Guid> _customerRepository;
 
     public SaleAppServiceTests()
     {
@@ -29,6 +33,7 @@ public class SaleAppServiceTests : PharmacySystemEntityFrameworkCoreTestBase
         _saleRepository = GetRequiredService<IRepository<Sale, Guid>>();
         _medicineRepository = GetRequiredService<IRepository<Medicine, Guid>>();
         _categoryRepository = GetRequiredService<IRepository<Category, Guid>>();
+        _customerRepository = GetRequiredService<IRepository<Customer, Guid>>();
     }
 
     // Creates a persisted medicine with a single stock lot and returns its id.
@@ -167,5 +172,42 @@ public class SaleAppServiceTests : PharmacySystemEntityFrameworkCoreTestBase
                 }
             }
         }));
+    }
+
+    // Regression: sorting the sale list by "customerName" (a DTO-only field) must
+    // not throw, and must keep walk-in sales (no customer) via a LEFT join.
+    [Fact]
+    public async Task GetListAsync_can_sort_by_customerName_and_keeps_walkin_sales()
+    {
+        var expiry = DateTime.Today.AddYears(1);
+        var medicineId = await SeedMedicineWithStockAsync("BSORT", expiry, 100, 10m);
+
+        var customerId = Guid.NewGuid();
+        await WithUnitOfWorkAsync(() => _customerRepository.InsertAsync(
+            new Customer(customerId, "Zoe Walker"), autoSave: true));
+
+        // Sale with a customer.
+        await _saleAppService.CreateAsync(new CreateUpdateSaleDto
+        {
+            SaleNumber = "SAL-SORT-C",
+            SaleDate = DateTime.Today,
+            CustomerId = customerId,
+            Items = { new CreateUpdateSaleItemDto { MedicineId = medicineId, BatchNumber = "BSORT", ExpiryDate = expiry, Quantity = 1, UnitPrice = 15m } }
+        });
+
+        // Walk-in sale (no customer).
+        await _saleAppService.CreateAsync(new CreateUpdateSaleDto
+        {
+            SaleNumber = "SAL-SORT-W",
+            SaleDate = DateTime.Today,
+            Items = { new CreateUpdateSaleItemDto { MedicineId = medicineId, BatchNumber = "BSORT", ExpiryDate = expiry, Quantity = 1, UnitPrice = 15m } }
+        });
+
+        var result = await _saleAppService.GetListAsync(
+            new PagedAndSortedResultRequestDto { Sorting = "customerName", MaxResultCount = 1000 });
+
+        var numbers = result.Items.Select(x => x.SaleNumber).ToList();
+        numbers.ShouldContain("SAL-SORT-C");
+        numbers.ShouldContain("SAL-SORT-W"); // walk-in retained by the LEFT join
     }
 }
