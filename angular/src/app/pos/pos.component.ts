@@ -304,6 +304,12 @@ export class PosComponent implements OnInit {
         const items: CreateUpdateSaleItemDto[] = this.cart.map(item => ({
             medicineId: item.medicineId,
             batchNumber: item.batchNumber || undefined,
+            // Send the exact expiry the stock lot was loaded with, verbatim.
+            // Stock lots are keyed by (medicine, batch, expiry), so omitting this
+            // makes the server look up a null-expiry lot that does not exist and
+            // fail with "The requested stock lot could not be found". Passing the
+            // server-provided string as-is (not re-parsed) round-trips exactly.
+            expiryDate: item.expiryDate || undefined,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
         }));
