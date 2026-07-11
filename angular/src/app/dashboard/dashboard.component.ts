@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BaseChartDirective } from 'ng2-charts';
 import { PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
@@ -23,6 +24,7 @@ export class DashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly purchaseService = inject(PurchaseService);
   private readonly saleService = inject(SaleService);
+  private readonly destroyRef = inject(DestroyRef);
 
   salesPurchasesChartData: any = {
     labels: [],
@@ -113,13 +115,17 @@ export class DashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.dashboardService.getStats().subscribe(response => {
-      this.stats = response;
-    });
+    this.dashboardService.getStats()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(response => {
+        this.stats = response;
+      });
   }
 
   loadSalesPurchasesChart(): void {
-    this.dashboardService.getSalesPurchasesTrend().subscribe(data => {
+    this.dashboardService.getSalesPurchasesTrend()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(data => {
       this.salesPurchasesChartData = {
         labels: data.map(x => x.label),
         datasets: [
@@ -131,7 +137,9 @@ export class DashboardComponent implements OnInit {
   }
 
   loadTopMedicinesChart(): void {
-    this.dashboardService.getTopSellingMedicines().subscribe(data => {
+    this.dashboardService.getTopSellingMedicines()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(data => {
       this.topMedicinesChartData = {
         labels: data.map(x => x.medicineName),
         datasets: [
@@ -142,7 +150,9 @@ export class DashboardComponent implements OnInit {
   }
 
   loadStockByCategoryChart(): void {
-    this.dashboardService.getStockByCategory().subscribe(data => {
+    this.dashboardService.getStockByCategory()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(data => {
       this.stockByCategoryChartData = {
         labels: data.map(x => x.categoryName),
         datasets: [
@@ -153,7 +163,9 @@ export class DashboardComponent implements OnInit {
   }
 
   loadExpiryTimelineChart(): void {
-    this.dashboardService.getExpiryTimeline().subscribe(data => {
+    this.dashboardService.getExpiryTimeline()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(data => {
       this.expiryTimelineChartData = {
         labels: data.map(x => x.label),
         datasets: [
@@ -170,9 +182,11 @@ export class DashboardComponent implements OnInit {
       sorting: ''
     };
 
-    this.purchaseService.getList(input).subscribe(response => {
-      this.recentPurchases = response.items ?? [];
-    });
+    this.purchaseService.getList(input)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(response => {
+        this.recentPurchases = response.items ?? [];
+      });
   }
 
   loadRecentSales(): void {
@@ -182,8 +196,10 @@ export class DashboardComponent implements OnInit {
       sorting: ''
     };
 
-    this.saleService.getList(input).subscribe(response => {
-      this.recentSales = response.items ?? [];
-    });
+    this.saleService.getList(input)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(response => {
+        this.recentSales = response.items ?? [];
+      });
   }
 }

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
 import { PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import { jsPDF } from 'jspdf';
@@ -61,7 +60,6 @@ export class PosComponent implements OnInit {
     private readonly medicineService = inject(MedicineService);
     private readonly stockService = inject(StockService);
     private readonly toaster = inject(ToasterService);
-    private readonly router = inject(Router);
 
     medicines: MedicineDto[] = [];
     stocks: StockDto[] = [];
@@ -339,11 +337,6 @@ export class PosComponent implements OnInit {
                 this.saleNumber = this.generateSaleNumber();
 
                 this.loadData();
-
-                if (sale?.id) {
-                    // Later we can route to invoice print page here.
-                    // this.router.navigate(['/sales', sale.id]);
-                }
             },
             error: error => {
                 this.isSaving = false;
