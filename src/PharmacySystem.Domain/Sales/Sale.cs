@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace PharmacySystem.Sales;
@@ -85,6 +86,11 @@ public class Sale : FullAuditedAggregateRoot<Guid>
     // Sets sale date
     public void SetSaleDate(DateTime saleDate)
     {
+        if (saleDate == default)
+        {
+            throw new ArgumentException("Sale date is required.", nameof(saleDate));
+        }
+
         SaleDate = saleDate;
     }
 
@@ -151,15 +157,23 @@ public class Sale : FullAuditedAggregateRoot<Guid>
         RecalculateTotals();
     }
 
-    // Recalculates sale totals
+    // Recalculates sale totals. NetAmount is kept honest (Total - Discount);
+    // an over-large discount is rejected by EnsureValid rather than silently
+    // clamped, so totals never become internally inconsistent.
     private void RecalculateTotals()
     {
         TotalAmount = _items.Sum(x => x.LineTotal);
         NetAmount = TotalAmount - DiscountAmount;
+    }
 
-        if (NetAmount < 0)
+    // Aggregate invariant check, called once the sale is fully built.
+    public void EnsureValid()
+    {
+        if (DiscountAmount > TotalAmount)
         {
-            NetAmount = 0;
+            throw new BusinessException(PharmacySystemDomainErrorCodes.DiscountExceedsTotal)
+                .WithData("Total", TotalAmount)
+                .WithData("Discount", DiscountAmount);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -86,6 +87,11 @@ public class Purchase : FullAuditedAggregateRoot<Guid>
 
     public void SetPurchaseDate(DateTime purchaseDate)
     {
+        if (purchaseDate == default)
+        {
+            throw new ArgumentException("Purchase date is required.", nameof(purchaseDate));
+        }
+
         PurchaseDate = purchaseDate;
     }
 
@@ -158,10 +164,16 @@ public class Purchase : FullAuditedAggregateRoot<Guid>
     {
         TotalAmount = _items.Sum(x => x.LineTotal);
         NetAmount = TotalAmount - DiscountAmount;
+    }
 
-        if (NetAmount < 0)
+    // Aggregate invariant check, called once the purchase is fully built.
+    public void EnsureValid()
+    {
+        if (DiscountAmount > TotalAmount)
         {
-            NetAmount = 0;
+            throw new BusinessException(PharmacySystemDomainErrorCodes.DiscountExceedsTotal)
+                .WithData("Total", TotalAmount)
+                .WithData("Discount", DiscountAmount);
         }
     }
 }

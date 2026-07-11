@@ -1,4 +1,5 @@
 ﻿using System;
+using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace PharmacySystem.Stocks;
@@ -112,7 +113,10 @@ public class Stock : FullAuditedAggregateRoot<Guid>
 
         if (Quantity < quantity)
         {
-            throw new InvalidOperationException("Insufficient stock.");
+            throw new BusinessException(PharmacySystemDomainErrorCodes.InsufficientStock)
+                .WithData("BatchNumber", BatchNumber)
+                .WithData("Available", Quantity)
+                .WithData("Requested", quantity);
         }
 
         Quantity -= quantity;

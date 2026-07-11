@@ -6,6 +6,7 @@ export interface CreateUpdateSaleDto {
   saleDate?: string;
   notes?: string | null;
   discountAmount?: number;
+  concurrencyStamp?: string | null;
   items: CreateUpdateSaleItemDto[];
 }
 
@@ -36,6 +37,7 @@ export interface SaleDto extends FullAuditedEntityDto<string> {
   totalAmount?: number;
   discountAmount?: number;
   netAmount?: number;
+  concurrencyStamp?: string | null;
   items?: SaleItemDto[];
 }
 

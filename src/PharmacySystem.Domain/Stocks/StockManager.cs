@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Domain.Services;
 
@@ -44,15 +45,18 @@ public class StockManager : DomainService
             throw new ArgumentException("Unit cost cannot be negative.", nameof(unitCost));
         }
 
-        // Find existing stock by medicine + batch
+        // Find the existing lot by medicine + batch + expiry. Expiry is part of
+        // the lot identity: the same batch number delivered with a different
+        // expiry date is a different physical lot and must not be merged.
         var existingStock = await _stockRepository.FirstOrDefaultAsync(
             x => x.MedicineId == medicineId &&
-                 x.BatchNumber == batchNumber
+                 x.BatchNumber == batchNumber &&
+                 x.ExpiryDate == expiryDate
         );
 
         if (existingStock == null)
         {
-            // Create new stock row if batch does not exist
+            // Create new stock row if this lot does not exist yet
             var stock = new Stock(
                 GuidGenerator.Create(),
                 medicineId,
@@ -66,17 +70,66 @@ public class StockManager : DomainService
             return;
         }
 
-        // Increase quantity if batch already exists
+        // Increase quantity if the lot already exists
         existingStock.Increase(quantity);
 
-        // Update latest unit cost
+        // Update latest unit cost for this lot
         existingStock.SetUnitCost(unitCost);
 
-        // If existing record has no expiry yet, keep/update it
-        if (!existingStock.ExpiryDate.HasValue && expiryDate.HasValue)
+        await _stockRepository.UpdateAsync(existingStock, autoSave: true);
+    }
+
+    // Increases stock quantity for an existing lot WITHOUT changing its unit
+    // cost. Use this when restoring previously-deducted stock (e.g. reversing a
+    // sale on edit/delete): the sold quantity goes back to the lot it came from,
+    // but the batch's purchase cost must be preserved for valuation/COGS. Never
+    // feed a selling price into IncreaseAsync's unitCost for this purpose.
+    public async Task IncreaseQuantityAsync(
+        Guid medicineId,
+        string batchNumber,
+        DateTime? expiryDate,
+        int quantity)
+    {
+        if (medicineId == Guid.Empty)
         {
-            existingStock.SetExpiryDate(expiryDate);
+            throw new ArgumentException("Medicine is required.", nameof(medicineId));
         }
+
+        if (string.IsNullOrWhiteSpace(batchNumber))
+        {
+            throw new ArgumentException("Batch number is required.", nameof(batchNumber));
+        }
+
+        if (quantity <= 0)
+        {
+            throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+        }
+
+        var existingStock = await _stockRepository.FirstOrDefaultAsync(
+            x => x.MedicineId == medicineId &&
+                 x.BatchNumber == batchNumber &&
+                 x.ExpiryDate == expiryDate
+        );
+
+        if (existingStock == null)
+        {
+            // The lot no longer exists (e.g. it was removed after depletion).
+            // Recreate it with an unknown unit cost of 0 rather than fabricating
+            // a cost from a selling price; the restored quantity is authoritative.
+            var stock = new Stock(
+                GuidGenerator.Create(),
+                medicineId,
+                batchNumber,
+                quantity,
+                0m,
+                expiryDate
+            );
+
+            await _stockRepository.InsertAsync(stock, autoSave: true);
+            return;
+        }
+
+        existingStock.Increase(quantity);
 
         await _stockRepository.UpdateAsync(existingStock, autoSave: true);
     }
@@ -103,15 +156,18 @@ public class StockManager : DomainService
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
         }
 
-        // Find stock by medicine + batch only
+        // Find the lot by medicine + batch + expiry so stock is deducted from
+        // the exact physical lot that was sold (matches how it was received).
         var existingStock = await _stockRepository.FirstOrDefaultAsync(
             x => x.MedicineId == medicineId &&
-                 x.BatchNumber == batchNumber
+                 x.BatchNumber == batchNumber &&
+                 x.ExpiryDate == expiryDate
         );
 
         if (existingStock == null)
         {
-            throw new InvalidOperationException("Stock record not found.");
+            throw new BusinessException(PharmacySystemDomainErrorCodes.StockNotFound)
+                .WithData("BatchNumber", batchNumber);
         }
 
         existingStock.Decrease(quantity);

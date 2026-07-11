@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PharmacySystem.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace PharmacySystem.Migrations
 {
     [DbContext(typeof(PharmacySystemDbContext))]
-    partial class PharmacySystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260711053007_AddedExpiryDateToSaleItem")]
+    partial class AddedExpiryDateToSaleItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,9 +167,6 @@ namespace PharmacySystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PatientCode")
-                        .IsUnique();
-
                     b.ToTable("AppCustomers", (string)null);
                 });
 
@@ -237,24 +237,19 @@ namespace PharmacySystem.Migrations
                         .HasColumnType("character varying(128)");
 
                     b.Property<decimal>("PurchasePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int>("ReorderLevel")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("SalePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Unit")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Barcode")
-                        .IsUnique();
 
                     b.HasIndex("CategoryId");
 
@@ -290,8 +285,7 @@ namespace PharmacySystem.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<decimal>("DiscountAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
@@ -317,8 +311,7 @@ namespace PharmacySystem.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<decimal>("NetAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -336,17 +329,9 @@ namespace PharmacySystem.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("TotalAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PurchaseDate");
-
-                    b.HasIndex("PurchaseNumber")
-                        .IsUnique();
-
-                    b.HasIndex("SupplierId");
 
                     b.ToTable("AppPurchases", (string)null);
                 });
@@ -383,8 +368,7 @@ namespace PharmacySystem.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<decimal>("DiscountAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
@@ -406,8 +390,7 @@ namespace PharmacySystem.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<decimal>("NetAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -422,17 +405,9 @@ namespace PharmacySystem.Migrations
                         .HasColumnType("character varying(64)");
 
                     b.Property<decimal>("TotalAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("SaleDate");
-
-                    b.HasIndex("SaleNumber")
-                        .IsUnique();
 
                     b.ToTable("AppSales", (string)null);
                 });
@@ -499,12 +474,11 @@ namespace PharmacySystem.Migrations
                         .HasColumnType("integer");
 
                     b.Property<decimal>("UnitCost")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicineId", "BatchNumber", "ExpiryDate")
+                    b.HasIndex("MedicineId", "BatchNumber")
                         .IsUnique();
 
                     b.ToTable("AppStocks", (string)null);
@@ -2453,12 +2427,6 @@ namespace PharmacySystem.Migrations
 
             modelBuilder.Entity("PharmacySystem.Purchases.Purchase", b =>
                 {
-                    b.HasOne("PharmacySystem.Suppliers.Supplier", null)
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.OwnsMany("PharmacySystem.Purchases.PurchaseItem", "_items", b1 =>
                         {
                             b1.Property<Guid>("Id")
@@ -2473,8 +2441,7 @@ namespace PharmacySystem.Migrations
                                 .HasColumnType("timestamp without time zone");
 
                             b1.Property<decimal>("LineTotal")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)");
+                                .HasColumnType("numeric");
 
                             b1.Property<Guid>("MedicineId")
                                 .HasColumnType("uuid");
@@ -2486,22 +2453,13 @@ namespace PharmacySystem.Migrations
                                 .HasColumnType("integer");
 
                             b1.Property<decimal>("UnitPrice")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)");
+                                .HasColumnType("numeric");
 
                             b1.HasKey("Id");
-
-                            b1.HasIndex("MedicineId");
 
                             b1.HasIndex("PurchaseId");
 
                             b1.ToTable("AppPurchaseItems", (string)null);
-
-                            b1.HasOne("PharmacySystem.Medicines.Medicine", null)
-                                .WithMany()
-                                .HasForeignKey("MedicineId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
 
                             b1.WithOwner()
                                 .HasForeignKey("PurchaseId");
@@ -2512,11 +2470,6 @@ namespace PharmacySystem.Migrations
 
             modelBuilder.Entity("PharmacySystem.Sales.Sale", b =>
                 {
-                    b.HasOne("PharmacySystem.Customers.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.OwnsMany("PharmacySystem.Sales.SaleItem", "_items", b1 =>
                         {
                             b1.Property<Guid>("Id")
@@ -2531,8 +2484,7 @@ namespace PharmacySystem.Migrations
                                 .HasColumnType("timestamp without time zone");
 
                             b1.Property<decimal>("LineTotal")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)");
+                                .HasColumnType("numeric");
 
                             b1.Property<Guid>("MedicineId")
                                 .HasColumnType("uuid");
@@ -2544,37 +2496,19 @@ namespace PharmacySystem.Migrations
                                 .HasColumnType("uuid");
 
                             b1.Property<decimal>("UnitPrice")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)");
+                                .HasColumnType("numeric");
 
                             b1.HasKey("Id");
-
-                            b1.HasIndex("MedicineId");
 
                             b1.HasIndex("SaleId");
 
                             b1.ToTable("AppSaleItems", (string)null);
-
-                            b1.HasOne("PharmacySystem.Medicines.Medicine", null)
-                                .WithMany()
-                                .HasForeignKey("MedicineId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
 
                             b1.WithOwner()
                                 .HasForeignKey("SaleId");
                         });
 
                     b.Navigation("_items");
-                });
-
-            modelBuilder.Entity("PharmacySystem.Stocks.Stock", b =>
-                {
-                    b.HasOne("PharmacySystem.Medicines.Medicine", null)
-                        .WithMany()
-                        .HasForeignKey("MedicineId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>

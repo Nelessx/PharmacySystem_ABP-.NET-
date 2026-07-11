@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+    Solution-wide MSBuild defaults, auto-imported by every project in the tree.
+    ABP-specific settings remain in common.props (still imported per-project).
+    We deliberately do NOT enable TreatWarningsAsErrors here: the solution
+    currently carries a backlog of analyzer/mapper warnings, and turning them
+    into errors would break the build. Enable it per-project once clean.
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Reproducible builds on CI, normalized source paths in the CI output. -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- Surface vulnerable transitive NuGet packages (e.g. Scriban) during restore. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+  </PropertyGroup>
+
+</Project>

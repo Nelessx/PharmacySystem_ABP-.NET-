@@ -30,6 +30,10 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(x => x.PatientCode)
             .HasMaxLength(64);
 
+        // Patient codes must be unique when present (NULLs are allowed and
+        // distinct, so customers without a code do not collide).
+        builder.HasIndex(x => x.PatientCode).IsUnique();
+
         builder.Property(x => x.IsActive)
             .IsRequired();
     }

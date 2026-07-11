@@ -82,6 +82,7 @@ function configureRoutes() {
       iconClass: 'fas fa-chart-line',
       order: 1,
       layout: eLayoutType.application,
+      requiredPolicy: 'PharmacySystem.Reports',
     },
   ]);
 }

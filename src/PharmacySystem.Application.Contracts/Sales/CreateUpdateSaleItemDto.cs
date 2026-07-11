@@ -10,15 +10,16 @@ public class CreateUpdateSaleItemDto
     [Required]
     public Guid MedicineId { get; set; }
 
-    // Optional batch number
+    // Batch number is required: stock is deducted from a specific lot.
+    [Required]
     [StringLength(64)]
     public string? BatchNumber { get; set; }
 
     // Optional expiry date for batch tracking
     public DateTime? ExpiryDate { get; set; }
 
-    // Quantity must be greater than zero
-    [Range(1, int.MaxValue)]
+    // Quantity must be between 1 and a sane upper bound
+    [Range(1, 100000)]
     public int Quantity { get; set; }
 
     // Unit price cannot be negative

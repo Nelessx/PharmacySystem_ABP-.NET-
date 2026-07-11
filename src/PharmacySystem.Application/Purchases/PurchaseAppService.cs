@@ -3,8 +3,10 @@ using PharmacySystem.Permissions;
 using PharmacySystem.Stocks;
 using PharmacySystem.Suppliers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Data;
@@ -78,6 +80,8 @@ public class PurchaseAppService :
             );
         }
 
+        purchase.EnsureValid();
+
         return await Task.FromResult(purchase);
     }
 
@@ -106,12 +110,20 @@ public class PurchaseAppService :
             );
         }
 
+        entity.EnsureValid();
+
         await Task.CompletedTask;
     }
 
     // Create purchase and then increase stock for each purchase item
     public override async Task<PurchaseDto> CreateAsync(CreateUpdatePurchaseDto input)
     {
+        // Friendly duplicate check before hitting the unique index.
+        if (await Repository.AnyAsync(x => x.PurchaseNumber == input.PurchaseNumber))
+        {
+            throw new UserFriendlyException($"A purchase with number '{input.PurchaseNumber}' already exists.");
+        }
+
         // Let ABP create and save the Purchase first
         var result = await base.CreateAsync(input);
 
@@ -130,40 +142,35 @@ public class PurchaseAppService :
         return result;
     }
 
-    // Returns suppliers for Purchase dropdown
+    // Returns suppliers for the Purchase dropdown (ordered/projected in SQL).
     public async Task<ListResultDto<SupplierLookupDto>> GetSupplierLookupAsync()
     {
-        // Get all suppliers from database
-        var suppliers = await _supplierRepository.GetListAsync();
+        await CheckPolicyAsync(PharmacySystemPermissions.Purchases.Default);
 
-        // Convert to lightweight lookup DTO
-        var items = suppliers
-            .OrderBy(x => x.Name)
-            .Select(x => new SupplierLookupDto
-            {
-                Id = x.Id,
-                Name = x.Name
-            })
-            .ToList();
+        var queryable = await _supplierRepository.GetQueryableAsync();
+
+        var items = await AsyncExecuter.ToListAsync(
+            queryable
+                .OrderBy(x => x.Name)
+                .Select(x => new SupplierLookupDto { Id = x.Id, Name = x.Name })
+        );
 
         return new ListResultDto<SupplierLookupDto>(items);
     }
 
-    // Returns medicines for Purchase item dropdown
+    // Returns active medicines for the Purchase item dropdown (projected in SQL).
     public async Task<ListResultDto<MedicineLookupDto>> GetMedicineLookupAsync()
     {
-        // Get all medicines from database
-        var medicines = await _medicineRepository.GetListAsync();
+        await CheckPolicyAsync(PharmacySystemPermissions.Purchases.Default);
 
-        // Convert to lightweight lookup DTO
-        var items = medicines
-            .OrderBy(x => x.Name)
-            .Select(x => new MedicineLookupDto
-            {
-                Id = x.Id,
-                Name = x.Name
-            })
-            .ToList();
+        var queryable = await _medicineRepository.GetQueryableAsync();
+
+        var items = await AsyncExecuter.ToListAsync(
+            queryable
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => new MedicineLookupDto { Id = x.Id, Name = x.Name })
+        );
 
         return new ListResultDto<MedicineLookupDto>(items);
     }
@@ -184,14 +191,30 @@ public class PurchaseAppService :
         var supplier = await _supplierRepository.FindAsync(purchase.SupplierId);
         dto.SupplierName = supplier?.Name;
 
-        // Manually fill medicine names for each item
+        // Fill medicine names in one query instead of one round-trip per item.
+        var medicineNames = await GetMedicineNamesAsync(dto.Items.Select(x => x.MedicineId));
         foreach (var item in dto.Items)
         {
-            var medicine = await _medicineRepository.FindAsync(item.MedicineId);
-            item.MedicineName = medicine?.Name;
+            item.MedicineName = medicineNames.GetValueOrDefault(item.MedicineId);
         }
 
         return dto;
+    }
+
+    // Loads a medicineId -> name map for the given ids in a single query.
+    private async Task<Dictionary<Guid, string>> GetMedicineNamesAsync(IEnumerable<Guid> medicineIds)
+    {
+        var ids = medicineIds.Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var queryable = await _medicineRepository.GetQueryableAsync();
+        var medicines = await AsyncExecuter.ToListAsync(
+            queryable.Where(m => ids.Contains(m.Id)).Select(m => new { m.Id, m.Name }));
+
+        return medicines.ToDictionary(m => m.Id, m => m.Name);
     }
 
     // Returns purchase list with supplier name filled manually
@@ -203,30 +226,36 @@ public class PurchaseAppService :
         // Load purchases query
         var queryable = await Repository.GetQueryableAsync();
 
-        // Simple default sorting for now
-        var query = queryable.OrderByDescending(x => x.CreationTime);
-
         // Get total count before paging
-        var totalCount = await AsyncExecuter.CountAsync(query);
+        var totalCount = await AsyncExecuter.CountAsync(queryable);
 
-        // Apply paging
+        // Honor client-supplied sorting; default to newest-first.
+        var query = string.IsNullOrWhiteSpace(input.Sorting)
+            ? queryable.OrderByDescending(x => x.CreationTime)
+            : ApplySorting(queryable, input);
+
         var purchases = await AsyncExecuter.ToListAsync(
             query
                 .Skip(input.SkipCount)
                 .Take(input.MaxResultCount)
         );
 
-        // Load suppliers once to avoid repeated DB calls inside loop
-        var suppliers = await _supplierRepository.GetListAsync();
+        // Resolve names only for the suppliers referenced on this page.
+        var supplierIds = purchases.Select(x => x.SupplierId).Distinct().ToList();
 
-        // Map purchases and manually fill supplier name
+        var supplierNames = new Dictionary<Guid, string>();
+        if (supplierIds.Count > 0)
+        {
+            var supplierQueryable = await _supplierRepository.GetQueryableAsync();
+            var suppliers = await AsyncExecuter.ToListAsync(
+                supplierQueryable.Where(s => supplierIds.Contains(s.Id)).Select(s => new { s.Id, s.Name }));
+            supplierNames = suppliers.ToDictionary(s => s.Id, s => s.Name);
+        }
+
         var items = purchases.Select(purchase =>
         {
             var dto = ObjectMapper.Map<Purchase, PurchaseDto>(purchase);
-
-            var supplier = suppliers.FirstOrDefault(x => x.Id == purchase.SupplierId);
-            dto.SupplierName = supplier?.Name;
-
+            dto.SupplierName = supplierNames.GetValueOrDefault(purchase.SupplierId);
             return dto;
         }).ToList();
 

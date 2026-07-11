@@ -8,13 +8,17 @@ using PharmacySystem.Purchases;
 using PharmacySystem.Sales;
 using PharmacySystem.Stocks;
 using PharmacySystem.Suppliers;
+using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using PharmacySystem.Categories;
+using PharmacySystem.Permissions;
 
 namespace PharmacySystem.Dashboard;
 
-// Application service for dashboard statistics
+// Application service for dashboard statistics.
+// Exposes financial/inventory aggregates, so it requires the Reports permission.
+[Authorize(PharmacySystemPermissions.Reports.Default)]
 public class DashboardAppService : ApplicationService, IDashboardAppService
 {
     private readonly IRepository<Medicine, Guid> _medicineRepository;

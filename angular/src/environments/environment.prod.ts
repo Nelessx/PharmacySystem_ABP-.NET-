@@ -1,9 +1,19 @@
 import { Environment } from '@abp/ng.core';
 
-const baseUrl = 'http://localhost:4200';
+// In production the SPA serves itself from its own origin, so derive baseUrl
+// from the browser instead of hardcoding localhost. The API/OAuth URLs below
+// are placeholders: the authoritative values are pulled at runtime from the
+// server's `/getEnvConfig` endpoint (see `remoteEnv` with deepmerge). Replace
+// the fallbacks below, or configure /getEnvConfig, for your deployment.
+const baseUrl =
+  typeof window !== 'undefined' && window.location?.origin
+    ? window.location.origin
+    : 'http://localhost:4200';
+
+const apiUrl = 'https://localhost:44378';
 
 const oAuthConfig = {
-  issuer: 'https://localhost:44378/',
+  issuer: `${apiUrl}/`,
   redirectUri: baseUrl,
   clientId: 'PharmacySystem_App',
   responseType: 'code',
@@ -20,7 +30,7 @@ export const environment = {
   oAuthConfig,
   apis: {
     default: {
-      url: 'https://localhost:44378',
+      url: apiUrl,
       rootNamespace: 'PharmacySystem',
     },
     AbpAccountPublic: {

@@ -1,19 +1,76 @@
 ﻿# PharmacySystem
 
-## About this solution
+A **pharmacy management system** for a retail/community pharmacy, built as a
+layered [Domain-Driven Design](https://abp.io/docs/latest/framework/architecture/domain-driven-design)
+solution on the [ABP Framework](https://abp.io) (.NET 10) with an Angular 20 front end.
 
-This is a layered startup solution based on [Domain Driven Design (DDD)](https://abp.io/docs/latest/framework/architecture/domain-driven-design) practises. All the fundamental ABP modules are already installed. Check the [Application Startup Template](https://abp.io/docs/latest/solution-templates/layered-web-application) documentation for more info.
+## Features
+
+| Module | Capabilities |
+| --- | --- |
+| **Categories** | Group medicines (e.g. Antibiotics, Analgesics). |
+| **Medicines** | Catalogue with generic name, unit, barcode, purchase/sale price, reorder level. |
+| **Suppliers** | Supplier master data. |
+| **Customers** | Customer/patient records for non-walk-in sales. |
+| **Purchases** | Record supplier purchases; each purchase item increases batch stock. |
+| **Sales** | Record sales; each sale item deducts the exact medicine + batch + expiry lot. |
+| **POS** | Fast point-of-sale screen with FEFO batch selection, cart, discount, and a thermal (80 mm) receipt / PDF. |
+| **Stock** | Per-lot on-hand quantities, low-stock and expiring-stock views. |
+| **Dashboard** | KPIs plus sales/purchase trend, top-selling, stock-by-category and expiry-timeline charts. |
+
+Access is controlled by ABP permissions. Besides `admin`, the DbMigrator seeds
+three ready-to-use roles: **Manager** (full access), **Pharmacist** (dispensing +
+day-to-day catalogue/stock) and **Cashier** (POS + customer registration).
+
+## Architecture
+
+Standard ABP layered monolith:
+
+* `PharmacySystem.Domain` / `.Domain.Shared` — entities (Sale, Purchase, Stock, Medicine, …), the `StockManager` domain service, permissions and role seeding.
+* `PharmacySystem.Application` / `.Application.Contracts` — application services, DTOs and permission definitions.
+* `PharmacySystem.EntityFrameworkCore` — EF Core (PostgreSQL) mappings and migrations.
+* `PharmacySystem.HttpApi` / `.HttpApi.Host` — auto-generated REST API and its host (also the OpenIddict auth server + Swagger).
+* `PharmacySystem.DbMigrator` — console app that applies migrations and seeds data.
+* `angular` — Angular 20 standalone-component SPA using the ABP `@abp/ng.*` packages and the LeptonX Lite theme.
 
 ### Pre-requirements
 
-* [.NET10.0+ SDK](https://dotnet.microsoft.com/download/dotnet)
-* [Node v18 or 20](https://nodejs.org/en)
+* [.NET 10.0+ SDK](https://dotnet.microsoft.com/download/dotnet)
+* [Node v18 or 20](https://nodejs.org/en) and [Yarn 1.x](https://classic.yarnpkg.com/)
+* [PostgreSQL](https://www.postgresql.org/) (the default connection string targets a local instance)
+
+## Running locally
+
+1. **Provide secrets** — create the git-ignored `appsettings.secrets.json` files described under *Configurations* below (at minimum the `ConnectionStrings:Default` for both the host and the DbMigrator).
+2. **Generate the signing certificate** — see *Generating a Signing Certificate* below (produces the git-ignored `openiddict.pfx`).
+3. **Restore client libraries** — from the solution root run `abp install-libs`.
+4. **Create & seed the database** — run the `PharmacySystem.DbMigrator` project (`dotnet run --project src/PharmacySystem.DbMigrator`). This applies migrations and seeds the admin user and pharmacy roles.
+5. **Start the API host** — `dotnet run --project src/PharmacySystem.HttpApi.Host` (defaults to `https://localhost:44378`, Swagger at `/swagger`).
+6. **Start the Angular app** — `cd angular && yarn && yarn start` (serves at `http://localhost:4200`).
+
+Default admin credentials are `admin` / `1q2w3E*` — **change these before any real use.**
 
 ### Configurations
 
-The solution comes with a default configuration that works out of the box. However, you may consider to change the following configuration before running your solution:
+Secrets are **not** committed to source control. The tracked `appsettings.json` files ship with empty placeholders for every sensitive value; provide real values through a local, git-ignored `appsettings.secrets.json` (already wired up via `AddAppSettingsSecretsJson()`) or environment variables / user-secrets.
 
-* Check the `ConnectionStrings` in `appsettings.json` files under the `PharmacySystem.HttpApi.Host` and `PharmacySystem.DbMigrator` projects and change it if you need.
+Create `src/PharmacySystem.HttpApi.Host/appsettings.secrets.json` (and a matching one under `PharmacySystem.DbMigrator`) with your local values:
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Port=5432;Database=PharmacySystem;User ID=postgres;Password=<your-db-password>;"
+  },
+  "AuthServer": {
+    "CertificatePassPhrase": "<your-certificate-password>"
+  },
+  "StringEncryption": {
+    "DefaultPassPhrase": "<your-32-char-encryption-passphrase>"
+  }
+}
+```
+
+> **Security note:** The DB password, OpenIddict certificate passphrase and `StringEncryption` passphrase were previously committed in plaintext. They have been removed from tracked files, but they still exist in git history — **rotate all three (and the seeded admin password) before deploying.**
 
 ### Before running the application
 
@@ -27,25 +84,16 @@ In the production environment, you need to use a production signing certificate.
 To generate a signing certificate, you can use the following command:
 
 ```bash
-dotnet dev-certs https -v -ep openiddict.pfx -p 6f8cf8c0-1a3e-46a8-acea-aca8a7b862ec
+dotnet dev-certs https -v -ep openiddict.pfx -p <your-certificate-password>
 ```
 
-> `6f8cf8c0-1a3e-46a8-acea-aca8a7b862ec` is the password of the certificate, you can change it to any password you want.
+> Replace `<your-certificate-password>` with a strong password of your choice and store it in `appsettings.secrets.json` under `AuthServer:CertificatePassPhrase` (never commit it). The generated `openiddict.pfx` is git-ignored.
 
 It is recommended to use **two** RSA certificates, distinct from the certificate(s) used for HTTPS: one for encryption, one for signing.
 
 For more information, please refer to: [OpenIddict Certificate Configuration](https://documentation.openiddict.com/configuration/encryption-and-signing-credentials.html#registering-a-certificate-recommended-for-production-ready-scenarios)
 
 > Also, see the [Configuring OpenIddict](https://abp.io/docs/latest/Deployment/Configuring-OpenIddict#production-environment) documentation for more information.
-
-### Solution structure
-
-This is a layered monolith application that consists of the following applications:
-
-* `PharmacySystem.DbMigrator`: A console application which applies the migrations and also seeds the initial data. It is useful on development as well as on production environment.
-* `PharmacySystem.HttpApi.Host`: ASP.NET Core API application that is used to expose the APIs to the clients.
-* `angular`: Angular application.
-
 
 ## Deploying the application
 

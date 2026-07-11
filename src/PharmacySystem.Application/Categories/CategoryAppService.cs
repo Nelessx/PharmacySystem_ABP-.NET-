@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using PharmacySystem.Medicines;
 using PharmacySystem.Permissions;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -16,14 +18,32 @@ public class CategoryAppService :
         CreateUpdateCategoryDto>,
     ICategoryAppService
 {
-    public CategoryAppService(IRepository<Category, Guid> repository)
+    private readonly IRepository<Medicine, Guid> _medicineRepository;
+
+    public CategoryAppService(
+        IRepository<Category, Guid> repository,
+        IRepository<Medicine, Guid> medicineRepository)
         : base(repository)
     {
+        _medicineRepository = medicineRepository;
+
         GetPolicyName = PharmacySystemPermissions.Categories.Default;
         GetListPolicyName = PharmacySystemPermissions.Categories.Default;
         CreatePolicyName = PharmacySystemPermissions.Categories.Create;
         UpdatePolicyName = PharmacySystemPermissions.Categories.Edit;
         DeletePolicyName = PharmacySystemPermissions.Categories.Delete;
+    }
+
+    // Block deleting a category that medicines still reference, with a friendly
+    // message instead of a foreign-key violation.
+    public override async Task DeleteAsync(Guid id)
+    {
+        if (await _medicineRepository.AnyAsync(x => x.CategoryId == id))
+        {
+            throw new BusinessException(PharmacySystemDomainErrorCodes.CategoryInUse);
+        }
+
+        await base.DeleteAsync(id);
     }
 
     protected override Task<Category> MapToEntityAsync(CreateUpdateCategoryDto input)

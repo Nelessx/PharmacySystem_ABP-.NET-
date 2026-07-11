@@ -103,6 +103,9 @@ export const APP_ROUTES: Routes = [
     path: 'dashboard',
     loadComponent: () =>
       import('./dashboard/dashboard.component').then(c => c.DashboardComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'PharmacySystem.Reports',
+    },
   },
 ];

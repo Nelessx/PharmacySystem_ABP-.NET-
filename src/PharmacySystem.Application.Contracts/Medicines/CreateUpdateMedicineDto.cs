@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace PharmacySystem.Medicines;
 
 // Input DTO used when creating or updating a medicine
-public class CreateUpdateMedicineDto
+public class CreateUpdateMedicineDto : IValidatableObject
 {
     // Medicine name is required
     [Required]
@@ -41,4 +42,15 @@ public class CreateUpdateMedicineDto
 
     // Active flag
     public bool IsActive { get; set; } = true;
+
+    // Selling below cost is almost always a data-entry error.
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (SalePrice < PurchasePrice)
+        {
+            yield return new ValidationResult(
+                "Sale price cannot be less than the purchase price.",
+                new[] { nameof(SalePrice) });
+        }
+    }
 }

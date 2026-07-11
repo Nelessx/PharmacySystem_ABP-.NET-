@@ -17,7 +17,8 @@ public class CreateUpdatePurchaseDto : IHasConcurrencyStamp
     [Required]
     public Guid SupplierId { get; set; }
 
-    // Purchase date
+    // Purchase date is required
+    [Required]
     public DateTime PurchaseDate { get; set; }
 
     // Optional invoice number
@@ -33,9 +34,10 @@ public class CreateUpdatePurchaseDto : IHasConcurrencyStamp
     public decimal DiscountAmount { get; set; }
 
     // Concurrency stamp for ABP optimistic concurrency
-    public string? ConcurrencyStamp { get; set; }
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 
-    // List of items (VERY IMPORTANT)
-    [Required]
+    // At least one item is required (MinLength enforces a non-empty purchase;
+    // [Required] alone is a no-op on an already-instantiated list).
+    [MinLength(1, ErrorMessage = "A purchase must contain at least one item.")]
     public List<CreateUpdatePurchaseItemDto> Items { get; set; } = new();
 }

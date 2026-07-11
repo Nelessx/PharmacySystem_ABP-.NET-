@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
   FormBuilder,
@@ -7,6 +8,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { Confirmation, ConfirmationService, ThemeSharedModule } from '@abp/ng.theme.shared';
 
@@ -47,18 +49,22 @@ export class PurchaseComponent implements OnInit {
   private readonly purchaseService = inject(PurchaseService);
   private readonly fb = inject(FormBuilder);
   private readonly confirmation = inject(ConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  // Tracks the current form's valueChanges subscription so rebuilding the form
+  // (each modal open) does not stack orphaned subscriptions.
+  private totalsSubscription?: Subscription;
 
   ngOnInit(): void {
-    // Load purchase list with a larger page size for now
     const purchaseStreamCreator = query =>
-      this.purchaseService.getList({
-        ...query,
-        maxResultCount: 100,
-      });
+      this.purchaseService.getList({ ...query, maxResultCount: 100 });
 
-    this.list.hookToQuery(purchaseStreamCreator).subscribe(response => {
-      this.purchases = response;
-    });
+    this.list
+      .hookToQuery(purchaseStreamCreator)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(response => {
+        this.purchases = response;
+      });
 
     // Load dropdown data
     this.loadSuppliers();
@@ -133,10 +139,15 @@ export class PurchaseComponent implements OnInit {
       this.addItemRow();
     }
 
-    // Recalculate totals whenever form changes
-    this.form.valueChanges.subscribe(() => {
-      this.recalculateUiTotals();
-    });
+    // Recalculate totals whenever the form changes. Drop any previous form's
+    // subscription so repeated modal opens don't stack listeners, and tear the
+    // current one down when the component is destroyed.
+    this.totalsSubscription?.unsubscribe();
+    this.totalsSubscription = this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.recalculateUiTotals());
+
+    this.recalculateUiTotals();
   }
 
   // Create one purchase item row
@@ -216,14 +227,10 @@ export class PurchaseComponent implements OnInit {
       ? this.purchaseService.update(this.selectedPurchase.id, input)
       : this.purchaseService.create(input);
 
-    request.subscribe(() => {
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.isModalOpen = false;
       this.list.get();
     });
-
-    console.log('selectedPurchase', this.selectedPurchase);
-    console.log('rawValue', rawValue);
-    console.log('concurrencyStamp being sent', rawValue.concurrencyStamp);
   }
 
   // Delete purchase

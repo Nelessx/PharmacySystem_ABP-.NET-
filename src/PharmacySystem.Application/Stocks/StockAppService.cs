@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PharmacySystem.Medicines;
+using PharmacySystem.Permissions;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -26,6 +28,10 @@ public class StockAppService :
         : base(repository)
     {
         _medicineRepository = medicineRepository;
+
+        // Require the Stock permission for Get/GetList and the custom endpoints below.
+        GetPolicyName = PharmacySystemPermissions.Stock.Default;
+        GetListPolicyName = PharmacySystemPermissions.Stock.Default;
     }
 
     // Returns one stock record with medicine name
@@ -46,9 +52,12 @@ public class StockAppService :
     {
         var queryable = await Repository.GetQueryableAsync();
 
-        var query = queryable.OrderByDescending(x => x.CreationTime);
+        var totalCount = await AsyncExecuter.CountAsync(queryable);
 
-        var totalCount = await AsyncExecuter.CountAsync(query);
+        // Honor client-supplied sorting; default to newest-first.
+        var query = string.IsNullOrWhiteSpace(input.Sorting)
+            ? queryable.OrderByDescending(x => x.CreationTime)
+            : ApplySorting(queryable, input);
 
         var stocks = await AsyncExecuter.ToListAsync(
             query
@@ -56,15 +65,22 @@ public class StockAppService :
                 .Take(input.MaxResultCount)
         );
 
-        var medicines = await _medicineRepository.GetListAsync();
+        // Resolve names only for the medicines referenced on this page.
+        var medicineIds = stocks.Select(x => x.MedicineId).Distinct().ToList();
+
+        var medicineNames = new Dictionary<Guid, string>();
+        if (medicineIds.Count > 0)
+        {
+            var medicineQueryable = await _medicineRepository.GetQueryableAsync();
+            var medicines = await AsyncExecuter.ToListAsync(
+                medicineQueryable.Where(m => medicineIds.Contains(m.Id)).Select(m => new { m.Id, m.Name }));
+            medicineNames = medicines.ToDictionary(m => m.Id, m => m.Name);
+        }
 
         var items = stocks.Select(stock =>
         {
             var dto = ObjectMapper.Map<Stock, StockDto>(stock);
-
-            var medicine = medicines.FirstOrDefault(x => x.Id == stock.MedicineId);
-            dto.MedicineName = medicine?.Name;
-
+            dto.MedicineName = medicineNames.GetValueOrDefault(stock.MedicineId);
             return dto;
         }).ToList();
 
@@ -74,6 +90,8 @@ public class StockAppService :
     // Returns stock rows where quantity is below or equal to medicine reorder level
     public async Task<ListResultDto<LowStockDto>> GetLowStockAsync()
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Stock.Default);
+
         var stocks = await Repository.GetListAsync();
         var medicines = await _medicineRepository.GetListAsync();
 
@@ -103,6 +121,8 @@ public class StockAppService :
     // Returns stock rows that are expired or expiring within the given number of days
     public async Task<ListResultDto<ExpiringStockDto>> GetExpiringStockAsync(int days = 30)
     {
+        await CheckPolicyAsync(PharmacySystemPermissions.Stock.Default);
+
         var stocks = await Repository.GetListAsync();
         var medicines = await _medicineRepository.GetListAsync();
 

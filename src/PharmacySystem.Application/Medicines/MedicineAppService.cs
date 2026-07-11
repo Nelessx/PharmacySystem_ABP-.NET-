@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using PharmacySystem.Categories;
 using PharmacySystem.Permissions;
+using PharmacySystem.Stocks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -20,19 +22,35 @@ public class MedicineAppService :
     IMedicineAppService
 {
     private readonly IRepository<Category, Guid> _categoryRepository;
+    private readonly IRepository<Stock, Guid> _stockRepository;
 
     public MedicineAppService(
         IRepository<Medicine, Guid> repository,
-        IRepository<Category, Guid> categoryRepository)
+        IRepository<Category, Guid> categoryRepository,
+        IRepository<Stock, Guid> stockRepository)
         : base(repository)
     {
         _categoryRepository = categoryRepository;
+        _stockRepository = stockRepository;
 
         GetPolicyName = PharmacySystemPermissions.Medicines.Default;
         GetListPolicyName = PharmacySystemPermissions.Medicines.Default;
         CreatePolicyName = PharmacySystemPermissions.Medicines.Create;
         UpdatePolicyName = PharmacySystemPermissions.Medicines.Edit;
         DeletePolicyName = PharmacySystemPermissions.Medicines.Delete;
+    }
+
+    // Block deleting a medicine that still has stock (the most common
+    // reference); sales/purchase history is additionally protected by the
+    // database foreign keys. Deactivate instead of deleting.
+    public override async Task DeleteAsync(Guid id)
+    {
+        if (await _stockRepository.AnyAsync(x => x.MedicineId == id))
+        {
+            throw new BusinessException(PharmacySystemDomainErrorCodes.MedicineInUse);
+        }
+
+        await base.DeleteAsync(id);
     }
 
     protected override Task<Medicine> MapToEntityAsync(CreateUpdateMedicineDto input)
@@ -69,16 +87,15 @@ public class MedicineAppService :
 
     public async Task<ListResultDto<CategoryLookupDto>> GetCategoryLookupAsync()
     {
-        var categories = await _categoryRepository.GetListAsync();
+        await CheckPolicyAsync(PharmacySystemPermissions.Medicines.Default);
 
-        var items = categories
-            .OrderBy(x => x.Name)
-            .Select(x => new CategoryLookupDto
-            {
-                Id = x.Id,
-                Name = x.Name
-            })
-            .ToList();
+        var queryable = await _categoryRepository.GetQueryableAsync();
+
+        var items = await AsyncExecuter.ToListAsync(
+            queryable
+                .OrderBy(x => x.Name)
+                .Select(x => new CategoryLookupDto { Id = x.Id, Name = x.Name })
+        );
 
         return new ListResultDto<CategoryLookupDto>(items);
     }
