@@ -272,3 +272,11 @@ src/PharmacySystem.Blazor.Server.Tiered/Logs/*
 # IdentityServer temp files
 tempkey.rsa
 tempkey.jwk
+
+# Secrets must never be committed. Keep real values in a local,
+# git-ignored appsettings.secrets.json (loaded via AddAppSettingsSecretsJson()).
+**/appsettings.secrets.json
+
+# OpenIddict signing/encryption certificate
+*.pfx
+openiddict.pfx

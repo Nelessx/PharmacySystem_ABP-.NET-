@@ -11,9 +11,25 @@ This is a layered startup solution based on [Domain Driven Design (DDD)](https:/
 
 ### Configurations
 
-The solution comes with a default configuration that works out of the box. However, you may consider to change the following configuration before running your solution:
+Secrets are **not** committed to source control. The tracked `appsettings.json` files ship with empty placeholders for every sensitive value; provide real values through a local, git-ignored `appsettings.secrets.json` (already wired up via `AddAppSettingsSecretsJson()`) or environment variables / user-secrets.
 
-* Check the `ConnectionStrings` in `appsettings.json` files under the `PharmacySystem.HttpApi.Host` and `PharmacySystem.DbMigrator` projects and change it if you need.
+Create `src/PharmacySystem.HttpApi.Host/appsettings.secrets.json` (and a matching one under `PharmacySystem.DbMigrator`) with your local values:
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Port=5432;Database=PharmacySystem;User ID=postgres;Password=<your-db-password>;"
+  },
+  "AuthServer": {
+    "CertificatePassPhrase": "<your-certificate-password>"
+  },
+  "StringEncryption": {
+    "DefaultPassPhrase": "<your-32-char-encryption-passphrase>"
+  }
+}
+```
+
+> **Security note:** The DB password, OpenIddict certificate passphrase and `StringEncryption` passphrase were previously committed in plaintext. They have been removed from tracked files, but they still exist in git history — **rotate all three (and the seeded admin password) before deploying.**
 
 ### Before running the application
 
@@ -27,10 +43,10 @@ In the production environment, you need to use a production signing certificate.
 To generate a signing certificate, you can use the following command:
 
 ```bash
-dotnet dev-certs https -v -ep openiddict.pfx -p 6f8cf8c0-1a3e-46a8-acea-aca8a7b862ec
+dotnet dev-certs https -v -ep openiddict.pfx -p <your-certificate-password>
 ```
 
-> `6f8cf8c0-1a3e-46a8-acea-aca8a7b862ec` is the password of the certificate, you can change it to any password you want.
+> Replace `<your-certificate-password>` with a strong password of your choice and store it in `appsettings.secrets.json` under `AuthServer:CertificatePassPhrase` (never commit it). The generated `openiddict.pfx` is git-ignored.
 
 It is recommended to use **two** RSA certificates, distinct from the certificate(s) used for HTTPS: one for encryption, one for signing.
 
