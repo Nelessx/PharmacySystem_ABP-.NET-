@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PharmacySystem.Customers;
+using PharmacySystem.Medicines;
 using PharmacySystem.Sales;
 using System;
 using Volo.Abp.EntityFrameworkCore.Modeling;
@@ -21,6 +23,19 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
         builder.Property(x => x.SaleNumber)
             .IsRequired()
             .HasMaxLength(64);
+
+        // Sale number is a human-facing document number and must be unique.
+        builder.HasIndex(x => x.SaleNumber).IsUnique();
+
+        // Speed up date-range reporting/history queries.
+        builder.HasIndex(x => x.SaleDate);
+
+        // Optional customer reference (walk-in sales have none). Restrict delete
+        // so a customer with sales history cannot be removed.
+        builder.HasOne<Customer>()
+            .WithMany()
+            .HasForeignKey(x => x.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(x => x.Notes)
             .HasMaxLength(256);
@@ -68,6 +83,13 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
             b.Property(x => x.LineTotal)
                 .IsRequired()
                 .HasPrecision(18, 2);
+
+            // Each sale line references a medicine; restrict delete of a
+            // medicine that appears in sales history.
+            b.HasOne<Medicine>()
+                .WithMany()
+                .HasForeignKey(x => x.MedicineId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

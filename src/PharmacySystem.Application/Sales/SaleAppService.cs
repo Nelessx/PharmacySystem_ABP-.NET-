@@ -114,6 +114,12 @@ public class SaleAppService :
         // unauthorized caller can never trigger stock side effects.
         await CheckCreatePolicyAsync();
 
+        // Friendly duplicate check before hitting the unique index.
+        if (await Repository.AnyAsync(x => x.SaleNumber == input.SaleNumber))
+        {
+            throw new UserFriendlyException($"A sale with number '{input.SaleNumber}' already exists.");
+        }
+
         try
         {
             // First decrease stock. If stock is insufficient, creation fails and

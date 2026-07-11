@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PharmacySystem.Medicines;
 using PharmacySystem.Stocks;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 
@@ -38,5 +39,11 @@ public class StockConfiguration : IEntityTypeConfiguration<Stock>
         // Two deliveries of the same batch number with different expiry dates
         // are genuinely different lots and must be tracked as separate rows.
         builder.HasIndex(x => new { x.MedicineId, x.BatchNumber, x.ExpiryDate }).IsUnique();
+
+        // Restrict delete of a medicine that still has stock rows.
+        builder.HasOne<Medicine>()
+            .WithMany()
+            .HasForeignKey(x => x.MedicineId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

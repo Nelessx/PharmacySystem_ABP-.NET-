@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PharmacySystem.Medicines;
 using PharmacySystem.Purchases;
+using PharmacySystem.Suppliers;
 using System;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 
@@ -18,6 +20,18 @@ public class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
         builder.Property(x => x.PurchaseNumber)
             .IsRequired()
             .HasMaxLength(64);
+
+        // Purchase number is a human-facing document number and must be unique.
+        builder.HasIndex(x => x.PurchaseNumber).IsUnique();
+
+        // Speed up date-range reporting/history queries.
+        builder.HasIndex(x => x.PurchaseDate);
+
+        // Restrict delete of a supplier that has purchase history.
+        builder.HasOne<Supplier>()
+            .WithMany()
+            .HasForeignKey(x => x.SupplierId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(x => x.InvoiceNumber)
             .HasMaxLength(128);
@@ -59,6 +73,13 @@ public class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
             b.Property(x => x.UnitPrice).IsRequired().HasPrecision(18, 2);
 
             b.Property(x => x.LineTotal).IsRequired().HasPrecision(18, 2);
+
+            // Each purchase line references a medicine; restrict delete of a
+            // medicine that appears in purchase history.
+            b.HasOne<Medicine>()
+                .WithMany()
+                .HasForeignKey(x => x.MedicineId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
     }

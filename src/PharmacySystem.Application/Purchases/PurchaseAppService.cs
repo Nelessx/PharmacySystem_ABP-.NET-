@@ -5,6 +5,7 @@ using PharmacySystem.Suppliers;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Data;
@@ -112,6 +113,12 @@ public class PurchaseAppService :
     // Create purchase and then increase stock for each purchase item
     public override async Task<PurchaseDto> CreateAsync(CreateUpdatePurchaseDto input)
     {
+        // Friendly duplicate check before hitting the unique index.
+        if (await Repository.AnyAsync(x => x.PurchaseNumber == input.PurchaseNumber))
+        {
+            throw new UserFriendlyException($"A purchase with number '{input.PurchaseNumber}' already exists.");
+        }
+
         // Let ABP create and save the Purchase first
         var result = await base.CreateAsync(input);
 

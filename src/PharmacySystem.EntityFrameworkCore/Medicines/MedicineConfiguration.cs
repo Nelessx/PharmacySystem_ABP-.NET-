@@ -28,6 +28,10 @@ public class MedicineConfiguration : IEntityTypeConfiguration<Medicine>
         builder.Property(x => x.Barcode)
             .HasMaxLength(64);
 
+        // Barcodes must be unique when present (NULLs are allowed and distinct,
+        // so medicines without a barcode do not collide).
+        builder.HasIndex(x => x.Barcode).IsUnique();
+
         builder.Property(x => x.PurchasePrice)
             .IsRequired()
             .HasPrecision(18, 2);
