@@ -16,6 +16,7 @@ public class CreateUpdateSupplierDto
 
     // Optional phone number
     [StringLength(32)]
+    [Phone]
     public string? Phone { get; set; }
 
     // Optional email

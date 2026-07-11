@@ -28,8 +28,9 @@ public class CreateUpdateSaleDto : IHasConcurrencyStamp
     [Range(0, double.MaxValue)]
     public decimal DiscountAmount { get; set; }
 
-    // At least one item is expected
-    [Required]
+    // At least one item is required ([Required] alone is a no-op on an
+    // already-instantiated list, so MinLength enforces a non-empty sale).
+    [MinLength(1, ErrorMessage = "A sale must contain at least one item.")]
     public List<CreateUpdateSaleItemDto> Items { get; set; } = new();
 
     // Concurrency stamp for ABP optimistic concurrency (empty on create)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using PharmacySystem.Validation;
 
 namespace PharmacySystem.Customers;
 
@@ -13,6 +14,7 @@ public class CreateUpdateCustomerDto
 
     // Optional phone number
     [StringLength(32)]
+    [Phone]
     public string? Phone { get; set; }
 
     // Optional address
@@ -23,7 +25,8 @@ public class CreateUpdateCustomerDto
     [StringLength(32)]
     public string? Gender { get; set; }
 
-    // Optional date of birth
+    // Optional date of birth (cannot be in the future)
+    [PastOrPresentDate(ErrorMessage = "Date of birth cannot be in the future.")]
     public DateTime? DateOfBirth { get; set; }
 
     // Optional patient/customer code
