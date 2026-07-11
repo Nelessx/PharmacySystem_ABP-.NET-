@@ -26,13 +26,16 @@ public class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
             .HasMaxLength(256);
 
         builder.Property(x => x.TotalAmount)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.DiscountAmount)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.NetAmount)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
 
 
@@ -53,9 +56,9 @@ public class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
 
             b.Property(x => x.Quantity).IsRequired();
 
-            b.Property(x => x.UnitPrice).IsRequired();
+            b.Property(x => x.UnitPrice).IsRequired().HasPrecision(18, 2);
 
-            b.Property(x => x.LineTotal).IsRequired();
+            b.Property(x => x.LineTotal).IsRequired().HasPrecision(18, 2);
         });
 
     }

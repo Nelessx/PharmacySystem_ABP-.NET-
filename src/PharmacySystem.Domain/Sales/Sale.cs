@@ -85,6 +85,11 @@ public class Sale : FullAuditedAggregateRoot<Guid>
     // Sets sale date
     public void SetSaleDate(DateTime saleDate)
     {
+        if (saleDate == default)
+        {
+            throw new ArgumentException("Sale date is required.", nameof(saleDate));
+        }
+
         SaleDate = saleDate;
     }
 

@@ -86,6 +86,11 @@ public class Purchase : FullAuditedAggregateRoot<Guid>
 
     public void SetPurchaseDate(DateTime purchaseDate)
     {
+        if (purchaseDate == default)
+        {
+            throw new ArgumentException("Purchase date is required.", nameof(purchaseDate));
+        }
+
         PurchaseDate = purchaseDate;
     }
 

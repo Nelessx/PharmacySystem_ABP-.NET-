@@ -26,13 +26,16 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
             .HasMaxLength(256);
 
         builder.Property(x => x.TotalAmount)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.DiscountAmount)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.NetAmount)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         // Configure SaleItem as owned child collection
         builder.OwnsMany<SaleItem>("_items", b =>
@@ -59,10 +62,12 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
                 .IsRequired();
 
             b.Property(x => x.UnitPrice)
-                .IsRequired();
+                .IsRequired()
+                .HasPrecision(18, 2);
 
             b.Property(x => x.LineTotal)
-                .IsRequired();
+                .IsRequired()
+                .HasPrecision(18, 2);
         });
     }
 }

@@ -16,7 +16,8 @@ public class CreateUpdateSaleDto : IHasConcurrencyStamp
     // Optional customer for walk-in sales support
     public Guid? CustomerId { get; set; }
 
-    // Sale date is required logically
+    // Sale date is required
+    [Required]
     public DateTime SaleDate { get; set; }
 
     // Optional notes

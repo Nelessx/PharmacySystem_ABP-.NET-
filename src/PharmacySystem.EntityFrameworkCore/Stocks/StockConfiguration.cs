@@ -28,7 +28,8 @@ public class StockConfiguration : IEntityTypeConfiguration<Stock>
             .IsRequired();
 
         builder.Property(x => x.UnitCost)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         // Optional expiry date
         builder.Property(x => x.ExpiryDate);

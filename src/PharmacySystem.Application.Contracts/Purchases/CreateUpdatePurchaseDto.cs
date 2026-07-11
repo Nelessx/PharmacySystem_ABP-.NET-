@@ -17,7 +17,8 @@ public class CreateUpdatePurchaseDto : IHasConcurrencyStamp
     [Required]
     public Guid SupplierId { get; set; }
 
-    // Purchase date
+    // Purchase date is required
+    [Required]
     public DateTime PurchaseDate { get; set; }
 
     // Optional invoice number

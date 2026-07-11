@@ -29,10 +29,12 @@ public class MedicineConfiguration : IEntityTypeConfiguration<Medicine>
             .HasMaxLength(64);
 
         builder.Property(x => x.PurchasePrice)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.SalePrice)
-            .IsRequired();
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.ReorderLevel)
             .IsRequired();
