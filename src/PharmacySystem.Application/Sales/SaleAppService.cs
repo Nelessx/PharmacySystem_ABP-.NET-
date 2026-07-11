@@ -225,15 +225,15 @@ public class SaleAppService :
     {
         var sale = await Repository.GetAsync(id);
 
-        // 🔴 STEP 1: RESTORE OLD STOCK (with ExpiryDate matching)
+        // 🔴 STEP 1: RESTORE OLD STOCK (quantity only — never overwrite the
+        // batch's real purchase cost with the item's selling price)
         foreach (var item in sale.Items)
         {
-            await _stockManager.IncreaseAsync(
+            await _stockManager.IncreaseQuantityAsync(
                 item.MedicineId,
                 item.BatchNumber!,
                 item.ExpiryDate,
-                item.Quantity,
-                item.UnitPrice
+                item.Quantity
             );
         }
 
@@ -259,15 +259,14 @@ public class SaleAppService :
     {
         var sale = await Repository.GetAsync(id);
 
-        // 🟢 Restore stock (with ExpiryDate matching)
+        // 🟢 Restore stock (quantity only — preserve the batch's purchase cost)
         foreach (var item in sale.Items)
         {
-            await _stockManager.IncreaseAsync(
+            await _stockManager.IncreaseQuantityAsync(
                 item.MedicineId,
                 item.BatchNumber!,
                 item.ExpiryDate,
-                item.Quantity,
-                item.UnitPrice
+                item.Quantity
             );
         }
 

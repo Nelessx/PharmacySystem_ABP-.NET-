@@ -78,6 +78,61 @@ public class StockManager : DomainService
         await _stockRepository.UpdateAsync(existingStock, autoSave: true);
     }
 
+    // Increases stock quantity for an existing lot WITHOUT changing its unit
+    // cost. Use this when restoring previously-deducted stock (e.g. reversing a
+    // sale on edit/delete): the sold quantity goes back to the lot it came from,
+    // but the batch's purchase cost must be preserved for valuation/COGS. Never
+    // feed a selling price into IncreaseAsync's unitCost for this purpose.
+    public async Task IncreaseQuantityAsync(
+        Guid medicineId,
+        string batchNumber,
+        DateTime? expiryDate,
+        int quantity)
+    {
+        if (medicineId == Guid.Empty)
+        {
+            throw new ArgumentException("Medicine is required.", nameof(medicineId));
+        }
+
+        if (string.IsNullOrWhiteSpace(batchNumber))
+        {
+            throw new ArgumentException("Batch number is required.", nameof(batchNumber));
+        }
+
+        if (quantity <= 0)
+        {
+            throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+        }
+
+        var existingStock = await _stockRepository.FirstOrDefaultAsync(
+            x => x.MedicineId == medicineId &&
+                 x.BatchNumber == batchNumber &&
+                 x.ExpiryDate == expiryDate
+        );
+
+        if (existingStock == null)
+        {
+            // The lot no longer exists (e.g. it was removed after depletion).
+            // Recreate it with an unknown unit cost of 0 rather than fabricating
+            // a cost from a selling price; the restored quantity is authoritative.
+            var stock = new Stock(
+                GuidGenerator.Create(),
+                medicineId,
+                batchNumber,
+                quantity,
+                0m,
+                expiryDate
+            );
+
+            await _stockRepository.InsertAsync(stock, autoSave: true);
+            return;
+        }
+
+        existingStock.Increase(quantity);
+
+        await _stockRepository.UpdateAsync(existingStock, autoSave: true);
+    }
+
     // Decreases stock for a medicine batch.
     public async Task DecreaseAsync(
         Guid medicineId,
