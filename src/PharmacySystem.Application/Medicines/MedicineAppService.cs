@@ -89,16 +89,13 @@ public class MedicineAppService :
     {
         await CheckPolicyAsync(PharmacySystemPermissions.Medicines.Default);
 
-        var categories = await _categoryRepository.GetListAsync();
+        var queryable = await _categoryRepository.GetQueryableAsync();
 
-        var items = categories
-            .OrderBy(x => x.Name)
-            .Select(x => new CategoryLookupDto
-            {
-                Id = x.Id,
-                Name = x.Name
-            })
-            .ToList();
+        var items = await AsyncExecuter.ToListAsync(
+            queryable
+                .OrderBy(x => x.Name)
+                .Select(x => new CategoryLookupDto { Id = x.Id, Name = x.Name })
+        );
 
         return new ListResultDto<CategoryLookupDto>(items);
     }

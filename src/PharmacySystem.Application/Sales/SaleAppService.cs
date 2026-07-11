@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PharmacySystem.Customers;
@@ -148,42 +149,36 @@ public class SaleAppService :
         }
     }
 
-    // Returns customers for Sale dropdown
+    // Returns active customers for the Sale dropdown (filtered/projected in SQL).
     public async Task<ListResultDto<CustomerLookupDto>> GetCustomerLookupAsync()
     {
         await CheckPolicyAsync(PharmacySystemPermissions.Sales.Default);
 
-        var customers = await _customerRepository.GetListAsync();
+        var queryable = await _customerRepository.GetQueryableAsync();
 
-        var items = customers
-            .Where(x => x.IsActive)
-            .OrderBy(x => x.Name)
-            .Select(x => new CustomerLookupDto
-            {
-                Id = x.Id,
-                Name = x.Name
-            })
-            .ToList();
+        var items = await AsyncExecuter.ToListAsync(
+            queryable
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => new CustomerLookupDto { Id = x.Id, Name = x.Name })
+        );
 
         return new ListResultDto<CustomerLookupDto>(items);
     }
 
-    // Returns medicines for Sale item dropdown
+    // Returns active medicines for the Sale item dropdown (filtered/projected in SQL).
     public async Task<ListResultDto<MedicineLookupDto>> GetMedicineLookupAsync()
     {
         await CheckPolicyAsync(PharmacySystemPermissions.Sales.Default);
 
-        var medicines = await _medicineRepository.GetListAsync();
+        var queryable = await _medicineRepository.GetQueryableAsync();
 
-        var items = medicines
-            .Where(x => x.IsActive)
-            .OrderBy(x => x.Name)
-            .Select(x => new MedicineLookupDto
-            {
-                Id = x.Id,
-                Name = x.Name
-            })
-            .ToList();
+        var items = await AsyncExecuter.ToListAsync(
+            queryable
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => new MedicineLookupDto { Id = x.Id, Name = x.Name })
+        );
 
         return new ListResultDto<MedicineLookupDto>(items);
     }
@@ -204,14 +199,30 @@ public class SaleAppService :
             dto.CustomerName = customer?.Name;
         }
 
-        // Fill medicine names
+        // Fill medicine names in one query instead of one round-trip per item.
+        var medicineNames = await GetMedicineNamesAsync(dto.Items.Select(x => x.MedicineId));
         foreach (var item in dto.Items)
         {
-            var medicine = await _medicineRepository.FindAsync(item.MedicineId);
-            item.MedicineName = medicine?.Name;
+            item.MedicineName = medicineNames.GetValueOrDefault(item.MedicineId);
         }
 
         return dto;
+    }
+
+    // Loads a medicineId -> name map for the given ids in a single query.
+    private async Task<Dictionary<Guid, string>> GetMedicineNamesAsync(IEnumerable<Guid> medicineIds)
+    {
+        var ids = medicineIds.Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var queryable = await _medicineRepository.GetQueryableAsync();
+        var medicines = await AsyncExecuter.ToListAsync(
+            queryable.Where(m => ids.Contains(m.Id)).Select(m => new { m.Id, m.Name }));
+
+        return medicines.ToDictionary(m => m.Id, m => m.Name);
     }
 
     // Returns sale list with customer name filled manually
@@ -221,17 +232,31 @@ public class SaleAppService :
 
         var queryable = await Repository.GetQueryableAsync();
 
-        var query = queryable.OrderByDescending(x => x.CreationTime);
+        var totalCount = await AsyncExecuter.CountAsync(queryable);
 
-        var totalCount = await AsyncExecuter.CountAsync(query);
+        // Honor client-supplied sorting; default to newest-first.
+        var query = string.IsNullOrWhiteSpace(input.Sorting)
+            ? queryable.OrderByDescending(x => x.CreationTime)
+            : ApplySorting(queryable, input);
 
         var sales = await AsyncExecuter.ToListAsync(
             query
                 .Skip(input.SkipCount)
                 .Take(input.MaxResultCount)
         );
-            
-        var customers = await _customerRepository.GetListAsync();
+
+        // Resolve names only for the customers referenced on this page.
+        var customerIds = sales.Where(x => x.CustomerId.HasValue)
+            .Select(x => x.CustomerId!.Value).Distinct().ToList();
+
+        var customerNames = new Dictionary<Guid, string>();
+        if (customerIds.Count > 0)
+        {
+            var customerQueryable = await _customerRepository.GetQueryableAsync();
+            var customers = await AsyncExecuter.ToListAsync(
+                customerQueryable.Where(c => customerIds.Contains(c.Id)).Select(c => new { c.Id, c.Name }));
+            customerNames = customers.ToDictionary(c => c.Id, c => c.Name);
+        }
 
         var items = sales.Select(sale =>
         {
@@ -239,8 +264,7 @@ public class SaleAppService :
 
             if (sale.CustomerId.HasValue)
             {
-                var customer = customers.FirstOrDefault(x => x.Id == sale.CustomerId.Value);
-                dto.CustomerName = customer?.Name;
+                dto.CustomerName = customerNames.GetValueOrDefault(sale.CustomerId.Value);
             }
 
             return dto;
