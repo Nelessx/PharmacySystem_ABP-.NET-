@@ -33,7 +33,9 @@ public class StockConfiguration : IEntityTypeConfiguration<Stock>
         // Optional expiry date
         builder.Property(x => x.ExpiryDate);
 
-        // Prevent duplicate stock rows for same medicine + batch
-        builder.HasIndex(x => new { x.MedicineId, x.BatchNumber }).IsUnique();
+        // A physical lot is uniquely identified by medicine + batch + expiry.
+        // Two deliveries of the same batch number with different expiry dates
+        // are genuinely different lots and must be tracked as separate rows.
+        builder.HasIndex(x => new { x.MedicineId, x.BatchNumber, x.ExpiryDate }).IsUnique();
     }
 }

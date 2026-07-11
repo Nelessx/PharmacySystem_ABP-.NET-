@@ -44,15 +44,18 @@ public class StockManager : DomainService
             throw new ArgumentException("Unit cost cannot be negative.", nameof(unitCost));
         }
 
-        // Find existing stock by medicine + batch
+        // Find the existing lot by medicine + batch + expiry. Expiry is part of
+        // the lot identity: the same batch number delivered with a different
+        // expiry date is a different physical lot and must not be merged.
         var existingStock = await _stockRepository.FirstOrDefaultAsync(
             x => x.MedicineId == medicineId &&
-                 x.BatchNumber == batchNumber
+                 x.BatchNumber == batchNumber &&
+                 x.ExpiryDate == expiryDate
         );
 
         if (existingStock == null)
         {
-            // Create new stock row if batch does not exist
+            // Create new stock row if this lot does not exist yet
             var stock = new Stock(
                 GuidGenerator.Create(),
                 medicineId,
@@ -66,17 +69,11 @@ public class StockManager : DomainService
             return;
         }
 
-        // Increase quantity if batch already exists
+        // Increase quantity if the lot already exists
         existingStock.Increase(quantity);
 
-        // Update latest unit cost
+        // Update latest unit cost for this lot
         existingStock.SetUnitCost(unitCost);
-
-        // If existing record has no expiry yet, keep/update it
-        if (!existingStock.ExpiryDate.HasValue && expiryDate.HasValue)
-        {
-            existingStock.SetExpiryDate(expiryDate);
-        }
 
         await _stockRepository.UpdateAsync(existingStock, autoSave: true);
     }
@@ -103,10 +100,12 @@ public class StockManager : DomainService
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
         }
 
-        // Find stock by medicine + batch only
+        // Find the lot by medicine + batch + expiry so stock is deducted from
+        // the exact physical lot that was sold (matches how it was received).
         var existingStock = await _stockRepository.FirstOrDefaultAsync(
             x => x.MedicineId == medicineId &&
-                 x.BatchNumber == batchNumber
+                 x.BatchNumber == batchNumber &&
+                 x.ExpiryDate == expiryDate
         );
 
         if (existingStock == null)
