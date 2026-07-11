@@ -51,6 +51,12 @@
     "Permission:Sales.Delete": "Delete",
 
     "Permission:Stock": "Stock",
-    "Permission:Reports": "Reports"
+    "Permission:Reports": "Reports",
+
+    "PharmacySystem:Stock:InsufficientStock": "There is not enough stock available for one or more items.",
+    "PharmacySystem:Stock:NotFound": "The requested stock lot could not be found.",
+    "PharmacySystem:Transactions:DiscountExceedsTotal": "The discount cannot be greater than the total amount.",
+    "PharmacySystem:Medicines:InUse": "This medicine cannot be deleted because it is referenced by stock, sales or purchases. Deactivate it instead.",
+    "PharmacySystem:Categories:InUse": "This category cannot be deleted because it is assigned to one or more medicines."
   }
 }

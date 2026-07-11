@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Domain.Services;
 
@@ -165,7 +166,8 @@ public class StockManager : DomainService
 
         if (existingStock == null)
         {
-            throw new InvalidOperationException("Stock record not found.");
+            throw new BusinessException(PharmacySystemDomainErrorCodes.StockNotFound)
+                .WithData("BatchNumber", batchNumber);
         }
 
         existingStock.Decrease(quantity);

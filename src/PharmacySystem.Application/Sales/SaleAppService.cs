@@ -77,6 +77,8 @@ public class SaleAppService :
             );
         }
 
+        sale.EnsureValid();
+
         return await Task.FromResult(sale);
     }
 
@@ -103,6 +105,8 @@ public class SaleAppService :
                 item.ExpiryDate
             );
         }
+
+        entity.EnsureValid();
 
         await Task.CompletedTask;
     }

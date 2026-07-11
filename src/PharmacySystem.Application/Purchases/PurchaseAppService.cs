@@ -79,6 +79,8 @@ public class PurchaseAppService :
             );
         }
 
+        purchase.EnsureValid();
+
         return await Task.FromResult(purchase);
     }
 
@@ -106,6 +108,8 @@ public class PurchaseAppService :
                 item.ExpiryDate
             );
         }
+
+        entity.EnsureValid();
 
         await Task.CompletedTask;
     }
