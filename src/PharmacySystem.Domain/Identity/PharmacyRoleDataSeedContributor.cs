@@ -6,6 +6,7 @@ using Volo.Abp.Guids;
 using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.PermissionManagement;
+using Volo.Abp.Uow;
 
 namespace PharmacySystem.Identity;
 
@@ -45,19 +46,22 @@ public class PharmacyRoleDataSeedContributor : IDataSeedContributor, ITransientD
     private readonly IPermissionManager _permissionManager;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     public PharmacyRoleDataSeedContributor(
         IIdentityRoleRepository roleRepository,
         IdentityRoleManager roleManager,
         IPermissionManager permissionManager,
         IGuidGenerator guidGenerator,
-        ICurrentTenant currentTenant)
+        ICurrentTenant currentTenant,
+        IUnitOfWorkManager unitOfWorkManager)
     {
         _roleRepository = roleRepository;
         _roleManager = roleManager;
         _permissionManager = permissionManager;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
+        _unitOfWorkManager = unitOfWorkManager;
     }
 
     // A shop manager can do everything within the pharmacy modules.
@@ -98,11 +102,18 @@ public class PharmacyRoleDataSeedContributor : IDataSeedContributor, ITransientD
 
     public async Task SeedAsync(DataSeedContext context)
     {
+        // Batch every role + permission-grant write into a single unit of work
+        // so there is one SaveChanges rather than dozens. Besides being more
+        // efficient, this avoids the many small concurrent writes that can
+        // contend for a shared (e.g. in-memory SQLite) connection during seeding.
         using (_currentTenant.Change(context?.TenantId))
+        using (var uow = _unitOfWorkManager.Begin(requiresNew: true))
         {
             await CreateRoleWithPermissionsAsync("Manager", ManagerPermissions);
             await CreateRoleWithPermissionsAsync("Pharmacist", PharmacistPermissions);
             await CreateRoleWithPermissionsAsync("Cashier", CashierPermissions);
+
+            await uow.CompleteAsync();
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using System;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -42,13 +43,25 @@ public class PharmacySystemEntityFrameworkCoreTestModule : AbpModule
 
     private void ConfigureInMemorySqlite(IServiceCollection services)
     {
-        _sqliteConnection = CreateDatabaseAndGetConnection();
+        // Use a shared-cache in-memory database identified by a unique name, and
+        // keep one connection open for the lifetime of the test run so the
+        // database is not discarded. Unlike a single shared connection object,
+        // this lets each DbContext open its OWN connection to the same in-memory
+        // database; Microsoft.Data.Sqlite then auto-retries on SQLITE_BUSY/LOCKED
+        // instead of failing, which eliminates the intermittent "database is
+        // locked" errors when ABP's data seeders issue concurrent commands.
+        var connectionString = $"Data Source=PharmacySystemTests-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
+
+        _sqliteConnection = new SqliteConnection(connectionString);
+        _sqliteConnection.Open();
+
+        CreateDatabaseSchema(connectionString);
 
         services.Configure<AbpDbContextOptions>(options =>
         {
             options.Configure(context =>
             {
-                context.DbContextOptions.UseSqlite(_sqliteConnection);
+                context.DbContextOptions.UseSqlite(connectionString);
             });
         });
     }
@@ -58,20 +71,13 @@ public class PharmacySystemEntityFrameworkCoreTestModule : AbpModule
         _sqliteConnection?.Dispose();
     }
 
-    private static SqliteConnection CreateDatabaseAndGetConnection()
+    private static void CreateDatabaseSchema(string connectionString)
     {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        connection.Open();
-
         var options = new DbContextOptionsBuilder<PharmacySystemDbContext>()
-            .UseSqlite(connection)
+            .UseSqlite(connectionString)
             .Options;
 
-        using (var context = new PharmacySystemDbContext(options))
-        {
-            context.GetService<IRelationalDatabaseCreator>().CreateTables();
-        }
-
-        return connection;
+        using var context = new PharmacySystemDbContext(options);
+        context.GetService<IRelationalDatabaseCreator>().CreateTables();
     }
 }
