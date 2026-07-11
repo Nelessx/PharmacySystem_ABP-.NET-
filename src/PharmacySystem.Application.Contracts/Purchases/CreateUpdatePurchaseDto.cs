@@ -33,7 +33,7 @@ public class CreateUpdatePurchaseDto : IHasConcurrencyStamp
     public decimal DiscountAmount { get; set; }
 
     // Concurrency stamp for ABP optimistic concurrency
-    public string? ConcurrencyStamp { get; set; }
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 
     // List of items (VERY IMPORTANT)
     [Required]

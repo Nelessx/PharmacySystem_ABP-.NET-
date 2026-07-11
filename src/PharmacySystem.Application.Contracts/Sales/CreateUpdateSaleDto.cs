@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Volo.Abp.Domain.Entities;
 
 namespace PharmacySystem.Sales;
 
 // Input DTO for creating/updating sale
-public class CreateUpdateSaleDto
+public class CreateUpdateSaleDto : IHasConcurrencyStamp
 {
     // Sale number is required
     [Required]
@@ -29,4 +30,7 @@ public class CreateUpdateSaleDto
     // At least one item is expected
     [Required]
     public List<CreateUpdateSaleItemDto> Items { get; set; } = new();
+
+    // Concurrency stamp for ABP optimistic concurrency (empty on create)
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 }

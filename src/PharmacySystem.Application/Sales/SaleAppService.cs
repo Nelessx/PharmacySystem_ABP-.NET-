@@ -5,8 +5,11 @@ using PharmacySystem.Customers;
 using PharmacySystem.Medicines;
 using PharmacySystem.Permissions;
 using PharmacySystem.Stocks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Data;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 
 namespace PharmacySystem.Sales;
@@ -107,21 +110,32 @@ public class SaleAppService :
     // Create sale and then decrease stock for each sold item
     public override async Task<SaleDto> CreateAsync(CreateUpdateSaleDto input)
     {
-        // First decrease stock. If stock is insufficient, creation should fail.
-        foreach (var item in input.Items)
+        // Enforce the create permission before mutating any stock, so an
+        // unauthorized caller can never trigger stock side effects.
+        await CheckCreatePolicyAsync();
+
+        try
         {
-            await _stockManager.DecreaseAsync(
-                item.MedicineId,
-                item.BatchNumber ?? throw new ArgumentException("Batch number is required for stock deduction."),
-                item.ExpiryDate,
-                item.Quantity
-            );
+            // First decrease stock. If stock is insufficient, creation fails and
+            // the ambient unit of work rolls the deductions back.
+            foreach (var item in input.Items)
+            {
+                await _stockManager.DecreaseAsync(
+                    item.MedicineId,
+                    item.BatchNumber ?? throw new ArgumentException("Batch number is required for stock deduction."),
+                    item.ExpiryDate,
+                    item.Quantity
+                );
+            }
+
+            // If stock deduction succeeded for all items, create and save the Sale
+            return await base.CreateAsync(input);
         }
-
-        // If stock deduction succeeded for all items, create and save the Sale
-        var result = await base.CreateAsync(input);
-
-        return result;
+        catch (AbpDbConcurrencyException)
+        {
+            throw new UserFriendlyException(
+                "The stock for one or more items changed while completing this sale. Please reload and try again.");
+        }
     }
 
     // Returns customers for Sale dropdown
@@ -223,33 +237,47 @@ public class SaleAppService :
 
     public override async Task<SaleDto> UpdateAsync(Guid id, CreateUpdateSaleDto input)
     {
+        await CheckUpdatePolicyAsync();
+
         var sale = await Repository.GetAsync(id);
 
-        // 🔴 STEP 1: RESTORE OLD STOCK (quantity only — never overwrite the
-        // batch's real purchase cost with the item's selling price)
-        foreach (var item in sale.Items)
+        // Apply the caller's concurrency stamp so a stale edit (or a concurrent
+        // edit/delete) is rejected instead of silently double-applying stock.
+        sale.SetConcurrencyStampIfNotNull(input.ConcurrencyStamp);
+
+        try
         {
-            await _stockManager.IncreaseQuantityAsync(
-                item.MedicineId,
-                item.BatchNumber!,
-                item.ExpiryDate,
-                item.Quantity
-            );
+            // 🔴 STEP 1: RESTORE OLD STOCK (quantity only — never overwrite the
+            // batch's real purchase cost with the item's selling price)
+            foreach (var item in sale.Items)
+            {
+                await _stockManager.IncreaseQuantityAsync(
+                    item.MedicineId,
+                    item.BatchNumber!,
+                    item.ExpiryDate,
+                    item.Quantity
+                );
+            }
+
+            // 🔵 STEP 2: UPDATE ENTITY
+            await MapToEntityAsync(input, sale);
+            await Repository.UpdateAsync(sale, autoSave: true);
+
+            // 🟢 STEP 3: APPLY NEW SALE (DEDUCT STOCK with ExpiryDate matching)
+            foreach (var item in input.Items)
+            {
+                await _stockManager.DecreaseAsync(
+                    item.MedicineId,
+                    item.BatchNumber!,
+                    item.ExpiryDate,
+                    item.Quantity
+                );
+            }
         }
-
-        // 🔵 STEP 2: UPDATE ENTITY
-        await MapToEntityAsync(input, sale);
-        await Repository.UpdateAsync(sale, autoSave: true);
-
-        // 🟢 STEP 3: APPLY NEW SALE (DEDUCT STOCK with ExpiryDate matching)
-        foreach (var item in input.Items)
+        catch (AbpDbConcurrencyException)
         {
-            await _stockManager.DecreaseAsync(
-                item.MedicineId,
-                item.BatchNumber!,
-                item.ExpiryDate,
-                item.Quantity
-            );
+            throw new UserFriendlyException(
+                "This sale or its stock changed since you loaded it. Please reload and try again.");
         }
 
         return ObjectMapper.Map<Sale, SaleDto>(sale);

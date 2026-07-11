@@ -1,6 +1,6 @@
-import type { EntityDto, FullAuditedEntityDto } from '@abp/ng.core';
+import type { EntityDto, FullAuditedEntityDto, IHasConcurrencyStamp } from '@abp/ng.core';
 
-export interface CreateUpdateSaleDto {
+export interface CreateUpdateSaleDto extends IHasConcurrencyStamp {
   saleNumber: string;
   customerId?: string | null;
   saleDate?: string;
@@ -27,7 +27,7 @@ export interface MedicineLookupDto {
   name?: string;
 }
 
-export interface SaleDto extends FullAuditedEntityDto<string> {
+export interface SaleDto extends FullAuditedEntityDto<string>, IHasConcurrencyStamp {
   saleNumber?: string;
   customerId?: string | null;
   customerName?: string | null;

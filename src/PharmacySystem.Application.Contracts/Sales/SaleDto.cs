@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Entities;
 
 namespace PharmacySystem.Sales;
 
 // Output DTO for Sale (header + items)
-public class SaleDto : FullAuditedEntityDto<Guid>
+public class SaleDto : FullAuditedEntityDto<Guid>, IHasConcurrencyStamp
 {
     // Sale number shown to users
     public string SaleNumber { get; set; } = string.Empty;
@@ -30,6 +31,9 @@ public class SaleDto : FullAuditedEntityDto<Guid>
 
     // Final total
     public decimal NetAmount { get; set; }
+
+    // Concurrency stamp for ABP optimistic concurrency
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 
     // Sale item lines
     public List<SaleItemDto> Items { get; set; } = new();
