@@ -1,0 +1,18 @@
+# Self-building multi-stage image for the DbMigrator console app. It runs once
+# per release (applies EF migrations + seeds admin/roles/OpenIddict clients),
+# then exits. Build context is the REPOSITORY ROOT. Multi-arch (amd64/arm64).
+#
+# Usage (from repo root):
+#   docker build -f deploy/Dockerfile.migrator -t pharmacy-migrator .
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet publish src/PharmacySystem.DbMigrator/PharmacySystem.DbMigrator.csproj \
+    -c Release -o /app /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app ./
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENTRYPOINT ["dotnet", "PharmacySystem.DbMigrator.dll"]

@@ -1,0 +1,15 @@
+# Automatic HTTPS via Let's Encrypt. Caddy obtains and renews certificates on
+# its own — you only need: (1) both domains' A records pointing at this host's
+# public IP, and (2) ports 80 and 443 reachable from the internet.
+#
+# {$API_DOMAIN} / {$APP_DOMAIN} are read from the environment (see compose).
+
+{$API_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy api:80
+}
+
+{$APP_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:80
+}

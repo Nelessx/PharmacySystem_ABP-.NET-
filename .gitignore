@@ -275,3 +275,7 @@ tempkey.jwk
 # OpenIddict signing/encryption certificate
 *.pfx
 openiddict.pfx
+
+# Production deployment secrets (compose env file). The .example is committed.
+deploy/.env.prod
+.env.prod
