@@ -1,0 +1,23 @@
+{
+  "application": {
+    "baseUrl": "https://REPLACE_APP_DOMAIN"
+  },
+  "oAuthConfig": {
+    "issuer": "https://REPLACE_API_DOMAIN/",
+    "redirectUri": "https://REPLACE_APP_DOMAIN",
+    "clientId": "PharmacySystem_App",
+    "responseType": "code",
+    "scope": "offline_access PharmacySystem",
+    "requireHttps": true
+  },
+  "apis": {
+    "default": {
+      "url": "https://REPLACE_API_DOMAIN",
+      "rootNamespace": "PharmacySystem"
+    },
+    "AbpAccountPublic": {
+      "url": "https://REPLACE_API_DOMAIN/",
+      "rootNamespace": "AbpAccountPublic"
+    }
+  }
+}

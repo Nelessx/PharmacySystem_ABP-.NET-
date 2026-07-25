@@ -1,0 +1,29 @@
+# Self-building multi-stage image for the ABP API host (also the OpenIddict
+# auth server). Build context is the REPOSITORY ROOT so project references
+# resolve. Multi-arch: the base images publish linux/amd64 and linux/arm64,
+# so this builds unchanged on an Oracle Cloud Ampere (ARM) VM.
+#
+# Usage (from repo root):
+#   docker build -f deploy/Dockerfile.host -t pharmacy-api .
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy everything (the .dockerignore keeps this lean and excludes secrets/certs),
+# then publish just the host project. Restore happens as part of publish.
+COPY . .
+RUN dotnet publish src/PharmacySystem.HttpApi.Host/PharmacySystem.HttpApi.Host.csproj \
+    -c Release -o /app /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app ./
+
+# Production runs OpenIddict's AddProductionEncryptionAndSigningCertificate,
+# which loads ./openiddict.pfx. The pfx is NOT baked into the image — it is
+# mounted at runtime (see docker-compose.prod.yml) so the secret stays out of
+# the image layers.
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
+ENTRYPOINT ["dotnet", "PharmacySystem.HttpApi.Host.dll"]

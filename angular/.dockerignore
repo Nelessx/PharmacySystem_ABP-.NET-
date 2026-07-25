@@ -1,0 +1,9 @@
+# The Angular image installs a fresh node_modules inside the container, then
+# COPYs the source. Without this, the host's node_modules/dist would be copied
+# over the container's, breaking the build and bloating the context.
+node_modules
+dist
+.angular
+.git
+Dockerfile*
+*.md

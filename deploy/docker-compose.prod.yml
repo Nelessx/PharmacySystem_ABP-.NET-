@@ -1,0 +1,111 @@
+# Production stack for the Pharmacy System — designed to run on a single Docker
+# host (e.g. an Oracle Cloud "Always Free" VM). Everything is free-tier friendly.
+#
+#   caddy  ── TLS termination + automatic Let's Encrypt (ports 80/443)
+#     ├── api  (ABP .NET 10 host + OpenIddict auth server, http:80 internally)
+#     └── web  (Angular SPA via nginx, http:80 internally)
+#   db          PostgreSQL, data on a named volume (persistent)
+#   db-migrator one-shot: applies migrations + seeds, then exits
+#
+# Run from the deploy/ folder:
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Values come from .env.prod (copy .env.prod.example). See README.md.
+
+name: pharmacy
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # Runs once: migrates the schema and seeds admin/roles/OpenIddict clients.
+  # Exits 0 on success; the API waits for that via service_completed_successfully.
+  db-migrator:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.migrator
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB};User ID=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      # false in production; set true only if you want the demo catalogue seeded.
+      PharmacySystem__SeedDemoData: "${SEED_DEMO_DATA:-false}"
+      # OpenIddict client redirect roots must match the public URLs.
+      OpenIddict__Applications__PharmacySystem_App__RootUrl: "https://${APP_DOMAIN}"
+      OpenIddict__Applications__PharmacySystem_Swagger__RootUrl: "https://${API_DOMAIN}/"
+      AuthServer__CertificatePassPhrase: "${CERT_PASSPHRASE}"
+      StringEncryption__DefaultPassPhrase: "${STRING_ENCRYPTION_PASSPHRASE}"
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.host
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      db-migrator:
+        condition: service_completed_successfully
+    volumes:
+      # Signing/encryption cert, mounted read-only (kept out of the image).
+      - ./certs/openiddict.pfx:/app/openiddict.pfx:ro
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:80"
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB};User ID=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      App__SelfUrl: "https://${API_DOMAIN}"
+      App__AngularUrl: "https://${APP_DOMAIN}"
+      App__CorsOrigins: "https://${APP_DOMAIN}"
+      App__RedirectAllowedUrls: "https://${APP_DOMAIN}"
+      AuthServer__Authority: "https://${API_DOMAIN}"
+      AuthServer__RequireHttpsMetadata: "true"
+      AuthServer__CertificatePassPhrase: "${CERT_PASSPHRASE}"
+      StringEncryption__DefaultPassPhrase: "${STRING_ENCRYPTION_PASSPHRASE}"
+
+  web:
+    build:
+      context: ../angular
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    volumes:
+      # Runtime SPA config (API/OAuth URLs). Served at /getEnvConfig and
+      # deep-merged over environment.prod.ts — no Angular rebuild needed.
+      - ./web/dynamic-env.json:/usr/share/nginx/html/dynamic-env.json:ro
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+      APP_DOMAIN: ${APP_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data      # persists issued certificates across restarts
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

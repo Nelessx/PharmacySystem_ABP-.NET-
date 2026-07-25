@@ -37,7 +37,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Remove="appsettings.secrets.json" />
-    <Content Include="appsettings.secrets.json">
+    <!-- Optional local-dev secrets. Guarded by Exists(...) so a from-source
+         build (Docker, CI, fresh clone) does not fail when the gitignored file
+         is absent; in production, configuration comes from environment vars. -->
+    <Content Include="appsettings.secrets.json" Condition="Exists('appsettings.secrets.json')">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

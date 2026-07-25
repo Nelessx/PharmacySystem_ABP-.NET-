@@ -1,0 +1,30 @@
+# Build context ignore for the .NET images (build context = repo root).
+# Keeps the context small and — importantly — never copies secrets or the dev
+# signing certificate into a build layer / image.
+.git
+.github
+.vs
+.vscode
+
+# Build outputs
+**/bin
+**/obj
+**/out
+**/publish
+
+# Node / Angular (the SPA is built by its own Dockerfile with context ./angular)
+**/node_modules
+angular/dist
+angular/.angular
+
+# Secrets & certificates — must NEVER end up in an image layer
+**/appsettings.secrets.json
+**/*.pfx
+**/*.key
+
+# Logs and local cruft
+**/Logs
+Logs
+**/*.user
+*.md
+deploy/certs
